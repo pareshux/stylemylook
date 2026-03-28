@@ -296,8 +296,10 @@ function HeroVideo() {
           <path d="M8 5v14l11-7L8 5z" fill="white" />
         </svg>
       </span>
-      <p className="mt-4 max-w-md px-4 text-center text-[15px] font-medium text-[#2A2A2A]">
-        Watch StyleMyLook style a party outfit in 30 seconds →
+      <p className="mt-4 px-4 text-center text-[24px] font-medium leading-[32px] text-[#2A2A2A]">
+        Watch StyleMyLook style a
+        <br />
+        party outfit in 30 seconds →
       </p>
     </button>
   )
