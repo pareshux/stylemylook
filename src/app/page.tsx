@@ -2,7 +2,6 @@
 
 import { LiveCounter } from '@/components/ui/LiveCounter'
 import { motion, useScroll, useTransform } from 'framer-motion'
-import Link from 'next/link'
 import { useRef, useState } from 'react'
 
 const fadeUp = {
@@ -15,15 +14,22 @@ const fadeUp = {
 const STYLEMYLOOK_LOGO_URL =
   'https://eqwqddsgvxrpksvptlmx.supabase.co/storage/v1/object/public/assets/stylemylook_logo.svg'
 
-const navAuthOutline =
-  'inline-flex items-center justify-center rounded-full border border-solid border-[#2A2A2A] bg-transparent px-6 py-2 text-[15px] font-medium text-[#2A2A2A]'
-const navAuthPrimary =
-  'inline-flex items-center justify-center rounded-full bg-[#2A2A2A] px-6 py-2 text-[15px] font-medium text-white transition-colors hover:bg-[#404040]'
+const INSTAGRAM_URL = 'https://instagram.com'
+
+const sectionPx = 'px-4 md:px-8'
 
 type WaitlistResponseJson = {
   success?: boolean
   error?: string
   message?: string
+}
+
+function requestWaitlistConfirm(email: string) {
+  void fetch('/api/waitlist-confirm', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  }).catch((err) => console.error('waitlist-confirm:', err))
 }
 
 async function postWaitlist(
@@ -95,24 +101,55 @@ function InstagramGlyph({ className }: { className?: string }) {
   )
 }
 
+function WaitlistSuccessView({ email }: { email: string }) {
+  return (
+    <div className="flex w-full max-w-full flex-col items-center text-center md:max-w-[700px]">
+      <p className="mb-4 text-5xl leading-none" aria-hidden>
+        🎉
+      </p>
+      <h3 className="mb-3 text-[26px] font-semibold leading-tight text-[#2A2A2A] md:text-3xl">
+        You&apos;re on the list!
+      </h3>
+      <p className="mb-6 max-w-lg text-[17px] font-normal leading-relaxed text-[#2A2A2A] md:text-lg">
+        We&apos;ll email you at{' '}
+        <span className="font-medium break-all">{email}</span> when early
+        access opens. Keep an eye on your inbox!
+      </p>
+      <p className="mb-4 text-sm text-[#5A5A5A]">
+        P.S. Follow us on Instagram for sneak peeks 👀
+      </p>
+      <a
+        href={INSTAGRAM_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-[15px] font-medium text-[#2A2A2A] underline underline-offset-4 hover:text-[#1a1a1a]"
+      >
+        Follow us on Instagram
+      </a>
+    </div>
+  )
+}
+
 function HeroWaitlistForm() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
-  const [doneMessage, setDoneMessage] = useState<string | undefined>()
+  const [signedUpEmail, setSignedUpEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     setLoading(true)
+    const submitted = email.trim()
     try {
-      const result = await postWaitlist(email)
+      const result = await postWaitlist(submitted)
       if (!result.ok) {
         setError(result.error)
         return
       }
-      setDoneMessage(result.message)
+      requestWaitlistConfirm(submitted.toLowerCase())
+      setSignedUpEmail(submitted)
       setDone(true)
     } catch (err) {
       console.error('Waitlist fetch error:', err)
@@ -123,21 +160,15 @@ function HeroWaitlistForm() {
   }
 
   if (done) {
-    return (
-      <p className="max-w-[700px] text-center text-[20px] font-medium leading-normal text-[#2A2A2A]">
-        {doneMessage
-          ? `🎉 ${doneMessage}`
-          : "🎉 You're on the list! We'll notify you at launch."}
-      </p>
-    )
+    return <WaitlistSuccessView email={signedUpEmail} />
   }
 
   return (
-    <div className="flex w-full max-w-[700px] flex-col items-center">
+    <div className="flex w-full max-w-full flex-col items-center md:max-w-[700px]">
       <form onSubmit={onSubmit} className="w-full">
         <div
           className={
-            'flex w-full flex-col gap-2 rounded-[20px] border border-[rgba(42,42,42,0.12)] bg-white p-3 sm:h-20 sm:flex-row sm:items-center sm:gap-0 sm:rounded-full sm:p-0 sm:pl-0'
+            'flex w-full max-w-full flex-col gap-2 rounded-[20px] border border-[rgba(42,42,42,0.12)] bg-white p-3 sm:h-20 sm:flex-row sm:items-center sm:gap-0 sm:rounded-full sm:p-0 sm:pl-0 md:max-w-[700px]'
           }
         >
           <input
@@ -169,20 +200,22 @@ function CtaWaitlistForm() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
-  const [doneMessage, setDoneMessage] = useState<string | undefined>()
+  const [signedUpEmail, setSignedUpEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     setLoading(true)
+    const submitted = email.trim()
     try {
-      const result = await postWaitlist(email)
+      const result = await postWaitlist(submitted)
       if (!result.ok) {
         setError(result.error)
         return
       }
-      setDoneMessage(result.message)
+      requestWaitlistConfirm(submitted.toLowerCase())
+      setSignedUpEmail(submitted)
       setDone(true)
     } catch (err) {
       console.error('Waitlist fetch error:', err)
@@ -193,19 +226,13 @@ function CtaWaitlistForm() {
   }
 
   if (done) {
-    return (
-      <p className="w-full max-w-[700px] text-center text-[20px] font-medium leading-normal text-[#2A2A2A]">
-        {doneMessage
-          ? `🎉 ${doneMessage}`
-          : "🎉 You're on the list! We'll notify you at launch."}
-      </p>
-    )
+    return <WaitlistSuccessView email={signedUpEmail} />
   }
 
   return (
-    <div className="flex w-full max-w-[700px] flex-col items-center">
+    <div className="flex w-full max-w-full flex-col items-center md:max-w-[700px]">
       <form onSubmit={onSubmit} className="w-full">
-        <div className="flex w-full flex-col gap-2 rounded-[20px] border border-[rgba(42,42,42,0.12)] bg-white p-3 sm:h-[72px] sm:flex-row sm:items-center sm:gap-0 sm:rounded-full sm:p-0 sm:pl-0">
+        <div className="flex w-full max-w-full flex-col gap-2 rounded-[20px] border border-[rgba(42,42,42,0.12)] bg-white p-3 sm:h-[72px] sm:flex-row sm:items-center sm:gap-0 sm:rounded-full sm:p-0 sm:pl-0 md:max-w-[700px]">
           <input
             type="email"
             required
@@ -234,9 +261,12 @@ function CtaWaitlistForm() {
 function HeroVideo() {
   const [playing, setPlaying] = useState(false)
 
+  const shellClass =
+    'relative mt-[36px] h-[220px] w-full max-w-[1280px] overflow-hidden rounded-[24px] bg-[#C8C4BC] md:h-[560px]'
+
   if (playing) {
     return (
-      <div className="relative mt-[36px] h-[560px] w-full max-w-[1280px] overflow-hidden rounded-[24px] bg-[#C8C4BC]">
+      <div className={shellClass}>
         <iframe
           title="Style My Look demo"
           src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
@@ -252,7 +282,7 @@ function HeroVideo() {
     <button
       type="button"
       onClick={() => setPlaying(true)}
-      className="relative mt-[36px] flex h-[560px] w-full max-w-[1280px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[24px] bg-[#C8C4BC] text-center transition-opacity hover:opacity-95"
+      className={`${shellClass} flex cursor-pointer flex-col items-center justify-center text-center transition-opacity hover:opacity-95`}
     >
       <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#2A2A2A]">
         <svg
@@ -285,26 +315,26 @@ function HowWeSolvedItSection() {
   const scale3 = useTransform(scrollYProgress, [0, 1], [1, 1])
 
   const cardShell =
-    'w-full max-w-[1280px] rounded-[24px] bg-white p-8 shadow-[0_4px_40px_rgba(0,0,0,0.06)] md:p-16'
+    'w-full max-w-[1280px] rounded-[24px] bg-white p-6 shadow-[0_4px_40px_rgba(0,0,0,0.06)] md:p-16'
   const rowLayout =
-    'flex min-h-[520px] flex-col items-center gap-8 md:flex-row md:gap-20'
+    'flex min-h-0 flex-col items-center gap-8 md:min-h-[520px] md:flex-row md:gap-20'
   const textCol =
-    'order-2 flex w-full flex-1 flex-col justify-center gap-6 md:order-1'
+    'order-2 flex w-full flex-1 flex-col justify-center gap-4 md:order-1 md:gap-6'
   const textTitle =
-    'text-[32px] font-semibold leading-[44px] text-[#2A2A2A]'
+    'text-[24px] font-semibold leading-[32px] text-[#2A2A2A] md:text-[32px] md:leading-[44px]'
   const textBody =
-    'text-[32px] font-normal leading-[44px] text-[#2A2A2A]'
+    'text-[18px] font-normal leading-[28px] text-[#2A2A2A] md:text-[32px] md:leading-[44px]'
   const illustrationCol =
     'order-1 flex w-full shrink-0 items-center justify-center md:order-2 md:w-[680px] md:max-w-full'
   const illustrationImg =
-    'h-auto max-h-[260px] w-full object-contain md:max-h-[460px]'
+    'h-auto max-h-[200px] w-full object-contain md:max-h-[460px]'
 
   return (
     <motion.section
       {...fadeUp}
-      className="mx-auto max-w-[1280px] px-6 pb-[60px] pt-[60px]"
+      className={`mx-auto max-w-[1280px] pb-[60px] pt-[60px] ${sectionPx}`}
     >
-      <h2 className="mb-16 text-center text-[60px] font-bold leading-[88px] text-[#2A2A2A]">
+      <h2 className="mb-10 text-center text-[36px] font-bold leading-tight text-[#2A2A2A] md:mb-16 md:text-[60px] md:leading-[88px]">
         How we solved it
       </h2>
 
@@ -416,32 +446,23 @@ export default function HomePage() {
         transition={{ duration: 0.5 }}
         className="sticky top-0 z-50 border-b border-[rgba(42,42,42,0.1)] bg-[#EDEAE4]"
       >
-        <div className="mx-auto flex h-14 w-full min-w-0 max-w-[1280px] items-center justify-between px-6 md:px-8">
+        <div
+          className={`relative mx-auto flex h-14 w-full max-w-[1280px] items-center justify-between ${sectionPx}`}
+        >
           <img
             src={STYLEMYLOOK_LOGO_URL}
             alt="Style My Look"
-            className="h-8 w-auto shrink-0"
+            className="relative z-10 h-8 w-auto shrink-0"
           />
-          <p className="min-w-0 flex-1 px-3 text-center text-base font-medium italic text-[#2A2A2A]">
+          <p className="pointer-events-none absolute left-1/2 top-1/2 hidden max-w-[min(100%,28rem)] -translate-x-1/2 -translate-y-1/2 px-16 text-center text-base font-medium italic text-[#2A2A2A] md:block">
             ✨ Early access is open, limited spots left
           </p>
-          <div className="flex shrink-0 items-center gap-2">
-            <div className="hidden items-center gap-2 md:flex">
-              <Link href="/login" className={navAuthOutline}>
-                Log in
-              </Link>
-              <Link href="/signup" className={navAuthPrimary}>
-                Get started
-              </Link>
-            </div>
-            <Link href="/signup" className={`${navAuthPrimary} md:hidden`}>
-              Get started
-            </Link>
-            <span className="text-base font-normal text-[#2A2A2A]">
+          <div className="relative z-10 flex shrink-0 items-center gap-2">
+            <span className="hidden text-base font-normal text-[#2A2A2A] md:inline">
               Stay updated. Follow us on
             </span>
             <a
-              href="https://instagram.com"
+              href={INSTAGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="text-[#2A2A2A]"
@@ -458,12 +479,12 @@ export default function HomePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mx-auto flex max-w-[1280px] flex-col items-center px-6 pb-12 pt-[60px] text-center"
+          className={`mx-auto flex max-w-[1280px] flex-col items-center pb-12 pt-[60px] text-center ${sectionPx}`}
         >
-          <h1 className="mb-6 text-center text-[78px] font-bold leading-[88px] text-[#2A2A2A]">
+          <h1 className="mb-6 max-w-[20ch] text-center text-[48px] font-bold leading-[1.05] text-[#2A2A2A] md:max-w-none md:text-[78px] md:leading-[88px]">
             Outfit crisis? Ab nahi.
           </h1>
-          <div className="mb-12 space-y-0 text-center text-[40px] font-normal leading-[60px] text-[#2A2A2A]">
+          <div className="mb-12 space-y-2 text-center text-[22px] font-normal leading-[30px] text-[#2A2A2A] md:space-y-0 md:text-[40px] md:leading-[60px]">
             <p>
               Upload your wardrobe, pick your vibe, and let AI do the rest.
             </p>
@@ -480,12 +501,12 @@ export default function HomePage() {
 
         <motion.section
           {...fadeUp}
-          className="mx-auto max-w-[1280px] px-6 pb-[60px] pt-[60px]"
+          className={`mx-auto max-w-[1280px] pb-[60px] pt-[60px] ${sectionPx}`}
         >
-          <h2 className="mb-16 text-center text-[60px] font-bold leading-[88px] text-[#2A2A2A]">
+          <h2 className="mb-10 text-center text-[36px] font-bold leading-tight text-[#2A2A2A] md:mb-16 md:text-[60px] md:leading-[88px]">
             Struggle we all have
           </h2>
-          <div className="grid grid-cols-1 gap-12 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-12">
             <div className="flex w-full flex-col items-center text-center">
               <img
                 data-placeholder="struggle-1"
@@ -538,15 +559,15 @@ export default function HomePage() {
 
         <motion.section
           {...fadeUp}
-          className="mx-auto mb-5 mt-10 max-w-[1280px] px-6"
+          className={`mx-auto mb-5 mt-10 max-w-[1280px] ${sectionPx}`}
         >
-          <div className="flex min-h-[680px] w-full flex-col items-center justify-center rounded-[24px] bg-[#D0CDC7] p-16 text-center">
-            <h2 className="mb-6 text-[60px] font-bold leading-[88px] text-[#2A2A2A]">
+          <div className="flex min-h-0 w-full flex-col items-center justify-center rounded-[24px] bg-[#D0CDC7] p-8 text-center md:min-h-[680px] md:p-16">
+            <h2 className="mb-6 text-[36px] font-bold leading-tight text-[#2A2A2A] md:text-[52px] md:leading-[1.15]">
               Join now and get
               <br />
               3 months of Pro free.
             </h2>
-            <p className="mb-16 max-w-3xl text-[32px] font-normal leading-[44px] text-[#2A2A2A]">
+            <p className="mb-10 max-w-3xl text-[22px] font-normal leading-[32px] text-[#2A2A2A] md:mb-16 md:text-[32px] md:leading-[44px]">
               When we launch publicly, Pro will be ₹299/month. Early access
               members lock in their free months. No catch. No auto-charge. Just
               first-mover love.
@@ -560,7 +581,9 @@ export default function HomePage() {
         {...fadeUp}
         className="border-t border-[rgba(42,42,42,0.1)] bg-[#EDEAE4]"
       >
-        <div className="mx-auto flex w-full min-w-0 max-w-[1280px] flex-col items-center gap-4 py-8 text-sm text-[#8A8680] md:h-14 md:flex-row md:items-center md:justify-between md:gap-0 md:py-0 md:leading-none px-6 md:px-8">
+        <div
+          className={`mx-auto flex w-full min-w-0 max-w-[1280px] flex-col items-center gap-4 py-8 text-sm text-[#8A8680] md:h-14 md:flex-row md:items-center md:justify-between md:gap-0 md:py-0 md:leading-none ${sectionPx}`}
+        >
           <img
             src={STYLEMYLOOK_LOGO_URL}
             alt="Style My Look"
@@ -579,7 +602,7 @@ export default function HomePage() {
             </a>
             <span aria-hidden> · </span>
             <a
-              href="https://instagram.com"
+              href={INSTAGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-[#1C1C1C]"
