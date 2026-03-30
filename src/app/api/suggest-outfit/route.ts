@@ -11,7 +11,7 @@ import {
 } from '@/lib/outfit-schema'
 
 const model =
-  process.env.ANTHROPIC_MODEL || 'claude-opus-4-5-20251101'
+  process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6'
 
 /** Strips BOM, outer quotes, and uses first line only — common causes of `invalid x-api-key`. */
 function normalizeAnthropicApiKey(raw: string | undefined): string | null {
@@ -244,7 +244,7 @@ export async function POST(request: Request) {
     ...imageContents.flat(),
     {
       type: 'text',
-      text: `You are a professional fashion stylist. You can see all the clothing items above (each image is followed by its Item ID and label).
+      text: `You are StyleAI, a fast and creative personal stylist. You can see all the clothing items above (each image is followed by its Item ID and label).
 
 Event: ${eventLabel(eventType)} (id: ${eventType})
 
@@ -277,6 +277,8 @@ Return ONLY valid JSON (no markdown):
     const msg = await client.messages.create({
       model,
       max_tokens: 8192,
+      system:
+        'You are StyleAI, a fast and creative personal stylist. You will receive wardrobe photos and must suggest complete outfits. Be concise but specific. Always return valid JSON only — no markdown, no extra text. Prioritize outfits that actually work together based on color, style and occasion.',
       messages: [{ role: 'user', content }],
     })
     const block = msg.content.find((b) => b.type === 'text')
