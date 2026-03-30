@@ -1,8 +1,18 @@
 'use client'
 
 import { LiveCounter } from '@/components/ui/LiveCounter'
-import { motion, useScroll, useTransform } from 'framer-motion'
-import { useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+import {
+  Camera,
+  Check,
+  Heart,
+  MapPin,
+  ShoppingBag,
+  Sparkles,
+  Upload,
+  Zap,
+} from 'lucide-react'
+import { useState } from 'react'
 
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
@@ -305,137 +315,374 @@ function HeroVideo() {
   )
 }
 
-function HowWeSolvedItSection() {
-  const stackRef = useRef<HTMLDivElement>(null)
-  const { scrollYProgress } = useScroll({
-    target: stackRef,
-    offset: ['start start', 'end end'],
-  })
+const stepReveal = {
+  initial: { opacity: 0, y: 40 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: '-80px' },
+  transition: { duration: 0.7, ease: 'easeOut' },
+} as const
 
-  const scale1 = useTransform(scrollYProgress, [0.12, 0.38], [1, 0.97])
-  const scale2 = useTransform(scrollYProgress, [0.36, 0.64], [1, 0.97])
-  const scale3 = useTransform(scrollYProgress, [0, 1], [1, 1])
+const mockupShell =
+  'overflow-hidden rounded-2xl border border-[#E3DDCF] bg-white shadow-sm'
 
-  const cardShell =
-    'w-full max-w-[1280px] rounded-[24px] bg-white p-6 shadow-[0_4px_40px_rgba(0,0,0,0.06)] md:p-16'
-  const rowLayout =
-    'flex min-h-0 flex-col items-center gap-8 md:min-h-[520px] md:flex-row md:gap-20'
-  const textCol =
-    'order-2 flex w-full flex-1 flex-col justify-center gap-4 md:order-1 md:gap-6'
-  const textTitle =
-    'text-[24px] font-semibold leading-[32px] text-text-primary md:text-[32px] md:leading-[44px]'
-  const textBody =
-    'text-[18px] font-normal leading-[28px] text-text-primary md:text-[32px] md:leading-[44px]'
-  const illustrationCol =
-    'order-1 flex w-full shrink-0 items-center justify-center md:order-2 md:w-[680px] md:max-w-full'
-  const illustrationImg =
-    'h-auto max-h-[200px] w-full object-contain md:max-h-[460px]'
+function StepConnector() {
+  return <div className="mx-auto my-2 h-16 w-px bg-[#E3DDCF]" aria-hidden />
+}
 
+function HowItWorksSection() {
   return (
-    <motion.section
-      {...fadeUp}
-      className={`mx-auto max-w-[1280px] pb-[60px] pt-[60px] ${sectionPx}`}
-    >
-      <h2 className="mb-10 text-center text-[36px] font-bold leading-tight text-text-primary md:mb-16 md:text-[60px] md:leading-[88px]">
-        How we solved it
-      </h2>
+    <section className="bg-[#F5F3EC] py-24 md:py-32">
+      <div className="mx-auto max-w-[1280px] px-6 md:px-12">
+        <header className="mb-20 text-center">
+          <p className="mb-4 text-[12px] font-bold uppercase tracking-[3px] text-[#8A8680]">
+            HOW IT WORKS
+          </p>
+          <h2 className="mb-4 text-[36px] font-bold leading-[1.15] text-[#2A2A2A] md:text-[52px]">
+            From wardrobe to outfit in 3 steps
+          </h2>
+          <p className="mx-auto max-w-lg text-center text-[18px] font-normal text-[#4E4E4E]">
+            No stylist needed. No guesswork. Just AI that actually knows your
+            clothes.
+          </p>
+        </header>
 
-      <div ref={stackRef} className="relative min-h-[250vh]">
-        <div className="relative min-h-[85vh]">
-          <motion.div
-            className="sticky top-[72px] z-10 w-full md:top-20"
-            style={{
-              scale: scale1,
-              transformOrigin: '50% 0%',
-            }}
-          >
-            <div className={cardShell}>
-              <div className={rowLayout}>
-                <div className={textCol}>
-                  <p className={textTitle}>Upload your wardrobe</p>
-                  <p className={textBody}>
-                    Open the app and snap photos of everything you own — tops,
-                    bottoms, dresses, shoes, jewellery, bags, all of it. Takes
-                    about 10 minutes once. Done forever.
-                  </p>
+        <motion.div {...stepReveal} className="py-[60px]">
+          <div className="grid grid-cols-1 items-center gap-10 md:grid-cols-2 md:gap-20">
+            <div className="min-w-0">
+              <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-[#2A2A2A] text-[14px] font-bold text-white">
+                01
+              </div>
+              <h3 className="mb-4 text-[36px] font-bold leading-[1.2] text-[#2A2A2A]">
+                Upload your wardrobe
+              </h3>
+              <p className="mb-6 text-[18px] font-normal leading-[1.7] text-[#4E4E4E]">
+                Snap or upload photos of everything you own — tops, bottoms,
+                dresses, shoes, bags, accessories. Takes about 10 minutes
+                once. AI reads each item automatically.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
+                  <Camera className="size-3.5 shrink-0 text-[#4E4E4E]" aria-hidden />
+                  Camera ready
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
+                  <Zap className="size-3.5 shrink-0 text-[#4E4E4E]" aria-hidden />
+                  Auto-tagged by AI
+                </span>
+              </div>
+            </div>
+            <div className={mockupShell}>
+              <div className="flex items-center justify-between bg-[#F5F3EC] px-4 py-3">
+                <div className="flex gap-1.5">
+                  <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
+                  <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
+                  <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
                 </div>
-                <div className={illustrationCol}>
-                  <img
-                    data-placeholder="how-1"
-                    src="https://eqwqddsgvxrpksvptlmx.supabase.co/storage/v1/object/public/assets/illustration_1.png"
-                    alt="Upload your wardrobe in the app"
-                    className={illustrationImg}
-                  />
+                <span className="text-[10px] font-bold tracking-widest text-[#8A8680]">
+                  MY WARDROBE
+                </span>
+                <span className="text-[11px] text-[#8A8680]">14 items</span>
+              </div>
+              <div className="p-4">
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { bg: '#2D3748', emoji: '🧥' },
+                    { bg: '#F7F7F5', emoji: '👔', border: true },
+                    { bg: '#D4956A', emoji: '👕' },
+                    { bg: '#3B5998', emoji: '👖' },
+                    { bg: '#D2B48C', emoji: '👟' },
+                    { bg: '#1A1A1A', emoji: '👞' },
+                  ].map((cell, i) => (
+                    <div
+                      key={i}
+                      className={`flex aspect-square items-center justify-center rounded-xl text-2xl ${
+                        cell.border ? 'border border-[#E3DDCF]' : ''
+                      }`}
+                      style={{ backgroundColor: cell.bg }}
+                    >
+                      {cell.emoji}
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 flex items-center justify-center rounded-xl border-2 border-dashed border-[#E3DDCF] py-3 text-center">
+                  <Upload className="size-4 text-[#8A8680]" aria-hidden />
+                  <span className="ml-2 text-[12px] text-[#8A8680]">
+                    Add more photos
+                  </span>
                 </div>
               </div>
             </div>
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
 
-        <div className="relative min-h-[85vh]">
-          <motion.div
-            className="sticky top-[72px] z-20 w-full md:top-20"
-            style={{
-              scale: scale2,
-              transformOrigin: '50% 0%',
-            }}
-          >
-            <div className={cardShell}>
-              <div className={rowLayout}>
-                <div className={textCol}>
-                  <p className={textTitle}>Tell us where you&apos;re going</p>
-                  <p className={textBody}>
-                    Party? Work meeting? Dinner date? Festival? Gym? Just tap
-                    your event and we&apos;ll take it from here.
-                  </p>
+        <StepConnector />
+
+        <motion.div
+          {...stepReveal}
+          className="border-t border-[#E3DDCF] py-[60px]"
+        >
+          <div className="grid grid-cols-1 items-center gap-10 md:grid-cols-2 md:gap-20">
+            <div
+              className={`${mockupShell} order-2 md:order-1`}
+            >
+              <div className="flex items-center justify-between bg-[#F5F3EC] px-4 py-3">
+                <div className="flex gap-1.5">
+                  <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
+                  <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
+                  <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
                 </div>
-                <div className={illustrationCol}>
-                  <img
-                    data-placeholder="how-2"
-                    src="https://eqwqddsgvxrpksvptlmx.supabase.co/storage/v1/object/public/assets/illustration_2.png"
-                    alt="Choose your event or occasion"
-                    className={illustrationImg}
-                  />
+                <span className="text-[10px] font-bold tracking-widest text-[#8A8680]">
+                  WHERE TO?
+                </span>
+                <span className="w-8" aria-hidden />
+              </div>
+              <div className="space-y-2 p-4">
+                {[
+                  {
+                    emoji: '☕',
+                    circle: 'bg-[#E8F2EB]',
+                    title: 'Casual Day Out',
+                    sub: 'Brunch, errands, coffee',
+                    selected: false,
+                  },
+                  {
+                    emoji: '💼',
+                    circle: 'bg-[#F5E6D8]',
+                    title: 'Work / Business',
+                    sub: 'Office, meetings',
+                    selected: true,
+                  },
+                  {
+                    emoji: '🌙',
+                    circle: 'bg-[#F7E8ED]',
+                    title: 'Date Night',
+                    sub: 'Dinner, drinks',
+                    selected: false,
+                  },
+                  {
+                    emoji: '✈️',
+                    circle: 'bg-[#E5EFF7]',
+                    title: 'Travel',
+                    sub: 'Airport, vacation',
+                    selected: false,
+                  },
+                ].map((card) => (
+                  <div
+                    key={card.title}
+                    className={`flex items-center gap-3 rounded-xl border p-3 ${
+                      card.selected
+                        ? 'border-[#2A2A2A] bg-[#F5F3EC]'
+                        : 'border-[#E3DDCF] bg-white'
+                    }`}
+                  >
+                    <div
+                      className={`flex size-10 shrink-0 items-center justify-center rounded-full text-base ${card.circle}`}
+                    >
+                      {card.emoji}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[13px] font-semibold text-[#2A2A2A]">
+                        {card.title}
+                      </p>
+                      <p className="text-[11px] text-[#8A8680]">{card.sub}</p>
+                    </div>
+                    {card.selected ? (
+                      <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[#2A2A2A]">
+                        <Check className="size-3.5 text-white" strokeWidth={3} aria-hidden />
+                      </div>
+                    ) : (
+                      <span className="size-6 shrink-0" aria-hidden />
+                    )}
+                  </div>
+                ))}
+                <div className="mt-3">
+                  <p className="mb-2 text-[11px] text-[#8A8680]">
+                    Refine your vibe
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {['Smart Casual', 'Formal', 'Minimalist', 'Bold'].map(
+                      (pill, i) => (
+                        <span
+                          key={pill}
+                          className={`rounded-full border border-[#E3DDCF] px-3 py-1 text-[12px] ${
+                            i === 0
+                              ? 'bg-[#2A2A2A] text-white'
+                              : 'bg-white text-[#4E4E4E]'
+                          }`}
+                        >
+                          {pill}
+                        </span>
+                      )
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </motion.div>
-        </div>
+            <div className="min-w-0 order-1 md:order-2">
+              <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-[#2A2A2A] text-[14px] font-bold text-white">
+                02
+              </div>
+              <h3 className="mb-4 text-[36px] font-bold leading-[1.2] text-[#2A2A2A]">
+                Tell us where you&apos;re going
+              </h3>
+              <p className="mb-6 text-[18px] font-normal leading-[1.7] text-[#4E4E4E]">
+                Party? Work meeting? Dinner date? Festival? Just tap your event
+                and the AI takes it from there — no lengthy questionnaires, no
+                style quizzes.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
+                  <MapPin className="size-3.5 shrink-0 text-[#4E4E4E]" aria-hidden />
+                  Context-aware
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
+                  <Heart className="size-3.5 shrink-0 text-[#4E4E4E]" aria-hidden />
+                  Vibe matching
+                </span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
 
-        <div className="relative min-h-[80vh]">
-          <motion.div
-            className="sticky top-[72px] z-30 w-full md:top-20"
-            style={{
-              scale: scale3,
-              transformOrigin: '50% 0%',
-            }}
-          >
-            <div className={cardShell}>
-              <div className={rowLayout}>
-                <div className={textCol}>
-                  <p className={textTitle}>
-                    Get 3 outfit suggestions instantly
-                  </p>
-                  <p className={textBody}>
-                    Our AI looks at your actual clothes and puts together 3
-                    complete looks, with styling tips, and even tells you what
-                    accessories would make the outfit pop.
-                  </p>
+        <StepConnector />
+
+        <motion.div
+          {...stepReveal}
+          className="border-t border-[#E3DDCF] py-[60px]"
+        >
+          <div className="grid grid-cols-1 items-center gap-10 md:grid-cols-2 md:gap-20">
+            <div className="min-w-0">
+              <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-[#2A2A2A] text-[14px] font-bold text-white">
+                03
+              </div>
+              <h3 className="mb-4 text-[36px] font-bold leading-[1.2] text-[#2A2A2A]">
+                Get 3 outfits instantly
+              </h3>
+              <p className="mb-6 text-[18px] font-normal leading-[1.7] text-[#4E4E4E]">
+                AI looks at your actual clothes, reads the occasion, and puts
+                together 3 complete outfit combinations — with styling tips and
+                accessories to complete the look.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
+                  <Sparkles className="size-3.5 shrink-0 text-[#4E4E4E]" aria-hidden />
+                  AI-powered
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
+                  <ShoppingBag className="size-3.5 shrink-0 text-[#4E4E4E]" aria-hidden />
+                  From your closet
+                </span>
+              </div>
+            </div>
+            <div className={mockupShell}>
+              <div className="flex items-center justify-between bg-[#F5F3EC] px-4 py-3">
+                <div className="flex gap-1.5">
+                  <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
+                  <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
+                  <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
                 </div>
-                <div className={illustrationCol}>
-                  <img
-                    data-placeholder="how-3"
-                    src="https://eqwqddsgvxrpksvptlmx.supabase.co/storage/v1/object/public/assets/illustration_3.png"
-                    alt="Three AI outfit suggestions with styling tips"
-                    className={illustrationImg}
-                  />
+                <span className="text-[10px] font-bold tracking-widest text-[#8A8680]">
+                  YOUR OUTFITS
+                </span>
+                <span className="w-8" aria-hidden />
+              </div>
+              <div className="p-4">
+                <div className="mb-3 flex items-center gap-2 rounded-xl bg-[#F5F3EC] p-3">
+                  <span className="text-sm text-amber-600" aria-hidden>
+                    ✦
+                  </span>
+                  <div>
+                    <p className="text-[12px] font-medium text-[#2A2A2A]">
+                      Styled for Work / Business
+                    </p>
+                    <p className="text-[11px] text-[#8A8680]">
+                      3 outfits from your wardrobe
+                    </p>
+                  </div>
+                </div>
+
+                <div className="relative overflow-hidden rounded-xl border border-[#E3DDCF]">
+                  <span className="absolute left-2 top-2 z-10 rounded-full bg-[#2A2A2A] px-2 py-0.5 text-[9px] font-bold text-white">
+                    TOP PICK
+                  </span>
+                  <div className="flex gap-1.5 bg-[#F8F6F3] p-3">
+                    {[
+                      { e: '🧥', bg: '#2D3748' },
+                      { e: '👔', bg: '#F7F7F5' },
+                      { e: '👖', bg: '#3B5998' },
+                      { e: '👞', bg: '#1A1A1A' },
+                    ].map((sq, i) => (
+                      <div
+                        key={i}
+                        className="flex size-8 items-center justify-center rounded-lg text-base"
+                        style={{ backgroundColor: sq.bg }}
+                      >
+                        {sq.e}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="p-2">
+                    <p className="text-[12px] font-semibold text-[#2A2A2A]">
+                      Power Classic
+                    </p>
+                    <p className="text-[10px] text-green-600">● 96% match</p>
+                  </div>
+                </div>
+
+                <div className="relative mt-2 overflow-hidden rounded-xl border border-[#E3DDCF]">
+                  <div className="flex gap-1.5 bg-[#F8F6F3] p-3">
+                    {[
+                      { e: '👕', bg: '#D4956A' },
+                      { e: '👖', bg: '#3B5998' },
+                      { e: '👟', bg: '#D2B48C' },
+                    ].map((sq, i) => (
+                      <div
+                        key={i}
+                        className="flex size-8 items-center justify-center rounded-lg text-base"
+                        style={{ backgroundColor: sq.bg }}
+                      >
+                        {sq.e}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="p-2">
+                    <p className="text-[12px] font-semibold text-[#2A2A2A]">
+                      Warm &amp; Easy
+                    </p>
+                    <p className="text-[10px] text-amber-600">● 88% match</p>
+                  </div>
+                </div>
+
+                <div className="relative mt-2 overflow-hidden rounded-xl border border-[#E3DDCF]">
+                  <div className="flex items-center gap-1.5 bg-[#F8F6F3] p-2">
+                    {[
+                      { e: '👔', bg: '#F7F7F5' },
+                      { e: '👖', bg: '#3B5998' },
+                      { e: '👟', bg: '#D2B48C' },
+                      { e: '⌚', bg: '#E3DDCF' },
+                    ].map((sq, i) => (
+                      <div
+                        key={i}
+                        className="flex size-7 items-center justify-center rounded-lg text-sm"
+                        style={{ backgroundColor: sq.bg }}
+                      >
+                        {sq.e}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between p-2">
+                    <p className="text-[12px] font-semibold text-[#2A2A2A]">
+                      Clean Minimal
+                    </p>
+                    <p className="text-[10px] text-[#4E4E4E]">● 84% match</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
       </div>
-    </motion.section>
+    </section>
   )
 }
 
@@ -505,63 +752,7 @@ export default function HomePage() {
           <HeroVideo />
         </motion.section>
 
-        <motion.section
-          {...fadeUp}
-          className={`mx-auto max-w-[1280px] pb-[60px] pt-[60px] ${sectionPx}`}
-        >
-          <h2 className="mb-10 text-center text-[36px] font-bold leading-tight text-text-primary md:mb-16 md:text-[60px] md:leading-[88px]">
-            Struggle we all have
-          </h2>
-          <div className="grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-12">
-            <div className="flex w-full flex-col items-center text-center">
-              <img
-                data-placeholder="struggle-1"
-                src="https://eqwqddsgvxrpksvptlmx.supabase.co/storage/v1/object/public/assets/icon_1.png"
-                alt="Last moment panic illustration"
-                className="mb-5 h-auto max-h-[220px] w-full max-w-[330px] object-contain md:max-h-[250px]"
-              />
-              <h3 className="mb-4 text-center text-[32px] font-medium leading-[44px] text-text-primary">
-                Last moment panic
-              </h3>
-              <p className="max-w-[320px] text-center text-[20px] font-normal leading-[28px] text-text-primary">
-                You&apos;re late. You&apos;ve tried on 4 outfits. You hate all
-                of them. You go with the black top. Again.
-              </p>
-            </div>
-            <div className="flex w-full flex-col items-center text-center">
-              <img
-                data-placeholder="struggle-2"
-                src="https://eqwqddsgvxrpksvptlmx.supabase.co/storage/v1/object/public/assets/icon_2.png"
-                alt="Full wardrobe illustration"
-                className="mb-5 h-auto max-h-[220px] w-full max-w-[330px] object-contain md:max-h-[250px]"
-              />
-              <h3 className="mb-4 text-center text-[32px] font-medium leading-[44px] text-text-primary">
-                The full-wardrobe
-              </h3>
-              <p className="max-w-[320px] text-center text-[20px] font-normal leading-[28px] text-text-primary">
-                You own so many clothes but somehow feel like you have nothing
-                to wear. Your wardrobe is basically a storage unit.
-              </p>
-            </div>
-            <div className="flex w-full flex-col items-center text-center">
-              <img
-                data-placeholder="struggle-3"
-                src="https://eqwqddsgvxrpksvptlmx.supabase.co/storage/v1/object/public/assets/icon_3.png"
-                alt="Shopping trap illustration"
-                className="mb-5 h-auto max-h-[220px] w-full max-w-[330px] object-contain md:max-h-[250px]"
-              />
-              <h3 className="mb-4 text-center text-[32px] font-medium leading-[44px] text-text-primary">
-                The shopping trap
-              </h3>
-              <p className="max-w-[320px] text-center text-[20px] font-normal leading-[28px] text-text-primary">
-                You keep buying new things hoping it&apos;ll fix it. But real
-                problem is you don&apos;t know what you already have.
-              </p>
-            </div>
-          </div>
-        </motion.section>
-
-        <HowWeSolvedItSection />
+        <HowItWorksSection />
 
         <motion.section
           {...fadeUp}
