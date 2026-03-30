@@ -20,8 +20,8 @@ export function HomeClient({ displayName }: { displayName: string }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
     >
-      <header className="flex items-center justify-between border-b border-[#1C1C1C]/[0.06] px-4 py-3">
-        <span className="text-sm font-bold tracking-tight text-[#1C1C1C]">
+      <header className="flex items-center justify-between border-b border-brand-border/60 px-4 py-3">
+        <span className="text-sm font-bold tracking-tight text-text-primary">
           StyleAI 👗
         </span>
         <div
@@ -33,10 +33,10 @@ export function HomeClient({ displayName }: { displayName: string }) {
       </header>
 
       <AppMaxWidth className="space-y-6 py-8">
-        <p className="text-center text-[0.9375rem] text-[#1C1C1C]/70">
+        <p className="text-center text-[0.9375rem] text-text-primary/70">
           {greetingForNow()}, {displayName}! ✨
         </p>
-        <h1 className="text-center text-xl font-bold tracking-tight text-[#1C1C1C]">
+        <h1 className="text-center text-xl font-bold tracking-tight text-text-primary">
           What are your plans today?
         </h1>
 
@@ -50,12 +50,12 @@ export function HomeClient({ displayName }: { displayName: string }) {
             >
               <Link
                 href={`/suggestions?event=${encodeURIComponent(ev.id)}`}
-                className="flex flex-col items-center rounded-2xl border border-[#1C1C1C]/[0.06] bg-white/80 px-3 py-5 text-center shadow-sm transition-all active:scale-[0.98] hover:border-[#E8724A]/25 hover:shadow-md"
+                className="flex flex-col items-center rounded-2xl border border-brand-border/60 bg-white px-3 py-5 text-center shadow-sm transition-all active:scale-[0.98] hover:border-[#E8724A]/25 hover:shadow-md"
               >
                 <span className="text-3xl leading-none" aria-hidden>
                   {ev.emoji}
                 </span>
-                <span className="mt-2 text-xs font-semibold leading-tight text-[#1C1C1C]">
+                <span className="mt-2 text-xs font-semibold leading-tight text-text-primary">
                   {ev.label}
                 </span>
               </Link>

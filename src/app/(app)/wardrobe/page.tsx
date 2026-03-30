@@ -100,15 +100,15 @@ export default function WardrobePage() {
       animate={{ opacity: 1 }}
       className="min-h-screen"
     >
-      <header className="flex items-center justify-between border-b border-[#1C1C1C]/[0.06] px-4 py-3">
-        <h1 className="text-lg font-bold tracking-tight text-[#1C1C1C]">
+      <header className="flex items-center justify-between border-b border-brand-border/60 px-4 py-3">
+        <h1 className="text-lg font-bold tracking-tight text-text-primary">
           My Wardrobe 👗
         </h1>
         <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={() => loadItems()}
-            className="flex size-10 items-center justify-center rounded-full text-[#1C1C1C]/60 transition-colors hover:bg-[#1C1C1C]/[0.06]"
+            className="flex size-10 items-center justify-center rounded-full text-text-primary/60 transition-colors hover:bg-brand-surface"
             aria-label="Refresh wardrobe"
           >
             <RefreshIcon />
@@ -126,12 +126,12 @@ export default function WardrobePage() {
 
       <AppMaxWidth className="py-4">
         {loading ? (
-          <p className="py-12 text-center text-sm text-[#1C1C1C]/50">
+          <p className="py-12 text-center text-sm text-text-primary/50">
             Loading…
           </p>
         ) : items.length === 0 ? (
-          <div className="rounded-2xl border border-[#1C1C1C]/[0.08] bg-white/80 px-6 py-12 text-center">
-            <p className="text-sm text-[#1C1C1C]/65">
+          <div className="rounded-2xl border border-brand-border/70 bg-white px-6 py-12 text-center">
+            <p className="text-sm text-text-primary/65">
               Your wardrobe is empty — add your first item! 👗
             </p>
             <Button
@@ -147,9 +147,9 @@ export default function WardrobePage() {
             {items.map((item) => (
               <div
                 key={item.id}
-                className="overflow-hidden rounded-2xl border border-[#1C1C1C]/[0.08] bg-white/90 shadow-sm"
+                className="overflow-hidden rounded-2xl border border-brand-border/70 bg-white shadow-sm"
               >
-                <div className="relative aspect-square bg-[#F5F0E8]">
+                <div className="relative aspect-square bg-brand-surface">
                   <Image
                     src={item.image_url}
                     alt=""
@@ -166,7 +166,7 @@ export default function WardrobePage() {
                     <TrashIcon />
                   </button>
                 </div>
-                <p className="truncate px-2 py-2 text-center text-xs font-medium text-[#1C1C1C]/75">
+                <p className="truncate px-2 py-2 text-center text-xs font-medium text-text-primary/75">
                   {item.user_notes?.trim() || 'Unnamed item'}
                 </p>
               </div>
@@ -200,7 +200,7 @@ export default function WardrobePage() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-              className="max-h-[88vh] overflow-y-auto rounded-t-3xl bg-[#FAF7F2] shadow-2xl"
+              className="max-h-[88vh] overflow-y-auto rounded-t-3xl bg-brand-bg shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="mx-auto mt-2 h-1 w-10 rounded-full bg-[#1C1C1C]/15" />

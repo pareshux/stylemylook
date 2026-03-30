@@ -82,7 +82,7 @@ export default function SignupPage() {
 
   return (
     <AuthPageShell>
-      <Card className="w-full max-w-sm border-[#1C1C1C]/[0.06] bg-white/90 shadow-[0_8px_30px_rgba(28,28,28,0.06)]">
+      <Card className="w-full max-w-sm border-brand-border/60 bg-white shadow-[0_8px_30px_rgba(28,28,28,0.06)]">
         <CardHeader className="space-y-1 text-center">
           <div className="mb-1 text-4xl" aria-hidden>
             👗
@@ -99,7 +99,7 @@ export default function SignupPage() {
             <Button
               type="button"
               variant="outline"
-              className="h-11 w-full rounded-xl border-[#1C1C1C]/12 bg-white font-semibold"
+              className="h-11 w-full rounded-xl border-brand-border/70 bg-white font-semibold"
               disabled={busy}
               onClick={() => signInWithOAuth('google')}
             >
@@ -109,7 +109,7 @@ export default function SignupPage() {
             <Button
               type="button"
               variant="outline"
-              className="h-11 w-full rounded-xl border-[#1C1C1C]/12 bg-white font-semibold"
+              className="h-11 w-full rounded-xl border-brand-border/70 bg-white font-semibold"
               disabled={busy}
               onClick={() => signInWithOAuth('facebook')}
             >
@@ -120,7 +120,7 @@ export default function SignupPage() {
             </Button>
           </div>
 
-          <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#1C1C1C]/40">
+          <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-text-primary/40">
             <span className="h-px flex-1 bg-[#1C1C1C]/10" />
             or sign up with email
             <span className="h-px flex-1 bg-[#1C1C1C]/10" />
@@ -129,7 +129,7 @@ export default function SignupPage() {
           <form onSubmit={handleSignup} className="space-y-4">
             {error ? (
               <p
-                className="rounded-xl bg-[#E8724A]/10 px-3 py-2 text-center text-sm text-[#1C1C1C]"
+                className="rounded-xl bg-[#E8724A]/10 px-3 py-2 text-center text-sm text-text-primary"
                 role="alert"
               >
                 {error}
@@ -177,7 +177,7 @@ export default function SignupPage() {
             </Button>
           </form>
 
-          <p className="text-center text-sm text-[#1C1C1C]/55">
+          <p className="text-center text-sm text-text-primary/55">
             Already have an account?{' '}
             <Link
               href="/login"

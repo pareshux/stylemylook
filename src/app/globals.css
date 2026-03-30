@@ -1,10 +1,85 @@
 @import 'tailwindcss';
 
+:root {
+  /* Brand Colors */
+  --color-bg: #F5F3EC;
+  --color-surface: #E3DDCF;
+  --color-border: #EAEAEA;
+  --color-text-primary: #2A2A2A;
+  --color-text-secondary: #4E4E4E;
+  --color-text-muted: #8A8680;
+  --color-white: #FFFFFF;
+
+  /* shadcn semantic tokens */
+  --background: 43 20% 94%;
+  --foreground: 0 0% 16%;
+  --card: 40 18% 88%;
+  --card-foreground: 0 0% 16%;
+  --popover: 43 20% 94%;
+  --popover-foreground: 0 0% 16%;
+  --primary: 0 0% 16%;
+  --primary-foreground: 0 0% 96%;
+  --secondary: 40 18% 88%;
+  --secondary-foreground: 0 0% 16%;
+  --muted: 40 15% 92%;
+  --muted-foreground: 0 0% 31%;
+  --accent: 40 18% 88%;
+  --accent-foreground: 0 0% 16%;
+  --border: 0 0% 92%;
+  --input: 0 0% 92%;
+  --ring: 0 0% 16%;
+  --radius: 0.75rem;
+}
+
 html {
   scroll-behavior: smooth;
 }
 
 body {
+  background-color: #F5F3EC;
+  color: #2A2A2A;
+  font-family: 'Instrument Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #2A2A2A;
+  font-family: 'Instrument Sans', sans-serif;
+}
+
+p {
+  color: #4E4E4E;
+}
+
+@layer components {
+  .heading-xl {
+    @apply font-bold text-[78px] leading-[88px] text-[#2A2A2A] font-sans;
+  }
+  .heading-lg {
+    @apply font-bold text-[60px] leading-[72px] text-[#2A2A2A] font-sans;
+  }
+  .heading-md {
+    @apply font-bold text-[40px] leading-[52px] text-[#2A2A2A] font-sans;
+  }
+  .heading-sm {
+    @apply font-semibold text-[32px] leading-[44px] text-[#2A2A2A] font-sans;
+  }
+  .body-lg {
+    @apply text-[20px] leading-[30px] text-[#4E4E4E] font-sans;
+  }
+  .body-md {
+    @apply text-[16px] leading-[24px] text-[#4E4E4E] font-sans;
+  }
+  .body-sm {
+    @apply text-[14px] leading-[20px] text-[#4E4E4E] font-sans;
+  }
+  .caption {
+    @apply text-[12px] leading-[16px] text-[#8A8680] font-sans;
+  }
 }

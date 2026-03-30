@@ -107,10 +107,10 @@ function WaitlistSuccessView({ email }: { email: string }) {
       <p className="mb-4 text-5xl leading-none" aria-hidden>
         🎉
       </p>
-      <h3 className="mb-3 text-[26px] font-semibold leading-tight text-[#2A2A2A] md:text-3xl">
+      <h3 className="mb-3 text-[26px] font-semibold leading-tight text-text-primary md:text-3xl">
         You&apos;re on the list!
       </h3>
-      <p className="mb-6 max-w-lg text-[17px] font-normal leading-relaxed text-[#2A2A2A] md:text-lg">
+      <p className="mb-6 max-w-lg text-[17px] font-normal leading-relaxed text-text-primary md:text-lg">
         We&apos;ll email you at{' '}
         <span className="font-medium break-all">{email}</span> when early
         access opens. Keep an eye on your inbox!
@@ -122,7 +122,7 @@ function WaitlistSuccessView({ email }: { email: string }) {
         href={INSTAGRAM_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-[15px] font-medium text-[#2A2A2A] underline underline-offset-4 hover:text-[#1a1a1a]"
+        className="text-[15px] font-medium text-text-primary underline underline-offset-4 hover:text-[#1a1a1a]"
       >
         Follow us on Instagram
       </a>
@@ -178,7 +178,7 @@ function HeroWaitlistForm() {
             placeholder="your@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="h-[52px] w-full flex-1 border-0 border-b border-[rgba(42,42,42,0.1)] bg-transparent px-4 text-[18px] text-[#2A2A2A] placeholder:text-[#9A9A9A] focus:outline-none sm:h-20 sm:border-b-0 sm:pl-8 sm:pr-2"
+            className="h-[52px] w-full flex-1 border-0 border-b border-[rgba(42,42,42,0.1)] bg-transparent px-4 text-[18px] text-text-primary placeholder:text-[#9A9A9A] focus:outline-none sm:h-20 sm:border-b-0 sm:pl-8 sm:pr-2"
           />
           <button
             type="submit"
@@ -240,7 +240,7 @@ function CtaWaitlistForm() {
             placeholder="your@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="h-[52px] w-full flex-1 border-0 border-b border-[rgba(42,42,42,0.1)] bg-transparent px-4 text-[18px] text-[#2A2A2A] placeholder:text-[#9A9A9A] focus:outline-none sm:h-[72px] sm:border-b-0 sm:pl-8 sm:pr-2"
+            className="h-[52px] w-full flex-1 border-0 border-b border-[rgba(42,42,42,0.1)] bg-transparent px-4 text-[18px] text-text-primary placeholder:text-[#9A9A9A] focus:outline-none sm:h-[72px] sm:border-b-0 sm:pl-8 sm:pr-2"
           />
           <button
             type="submit"
@@ -296,7 +296,7 @@ function HeroVideo() {
           <path d="M8 5v14l11-7L8 5z" fill="white" />
         </svg>
       </span>
-      <p className="mt-4 px-4 text-center text-[24px] font-medium leading-[32px] text-[#2A2A2A]">
+      <p className="mt-4 px-4 text-center text-[24px] font-medium leading-[32px] text-text-primary">
         Watch StyleMyLook style a
         <br />
         party outfit in 30 seconds →
@@ -323,9 +323,9 @@ function HowWeSolvedItSection() {
   const textCol =
     'order-2 flex w-full flex-1 flex-col justify-center gap-4 md:order-1 md:gap-6'
   const textTitle =
-    'text-[24px] font-semibold leading-[32px] text-[#2A2A2A] md:text-[32px] md:leading-[44px]'
+    'text-[24px] font-semibold leading-[32px] text-text-primary md:text-[32px] md:leading-[44px]'
   const textBody =
-    'text-[18px] font-normal leading-[28px] text-[#2A2A2A] md:text-[32px] md:leading-[44px]'
+    'text-[18px] font-normal leading-[28px] text-text-primary md:text-[32px] md:leading-[44px]'
   const illustrationCol =
     'order-1 flex w-full shrink-0 items-center justify-center md:order-2 md:w-[680px] md:max-w-full'
   const illustrationImg =
@@ -336,7 +336,7 @@ function HowWeSolvedItSection() {
       {...fadeUp}
       className={`mx-auto max-w-[1280px] pb-[60px] pt-[60px] ${sectionPx}`}
     >
-      <h2 className="mb-10 text-center text-[36px] font-bold leading-tight text-[#2A2A2A] md:mb-16 md:text-[60px] md:leading-[88px]">
+      <h2 className="mb-10 text-center text-[36px] font-bold leading-tight text-text-primary md:mb-16 md:text-[60px] md:leading-[88px]">
         How we solved it
       </h2>
 
@@ -441,12 +441,12 @@ function HowWeSolvedItSection() {
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[#EDEAE4] text-[#1C1C1C]">
+    <div className="min-h-screen bg-brand-bg text-text-primary">
       <motion.header
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="sticky top-0 z-50 border-b border-[rgba(42,42,42,0.1)] bg-[#EDEAE4]"
+        className="sticky top-0 z-50 border-b border-[rgba(42,42,42,0.1)] bg-brand-bg"
       >
         <div
           className={`relative mx-auto flex h-14 w-full max-w-[1280px] items-center justify-between ${sectionPx}`}
@@ -456,21 +456,21 @@ export default function HomePage() {
             alt="Style My Look"
             className="relative z-10 h-8 w-auto shrink-0"
           />
-          <p className="pointer-events-none absolute left-1/2 top-1/2 hidden max-w-[min(100%,28rem)] -translate-x-1/2 -translate-y-1/2 px-16 text-center text-base font-medium italic text-[#2A2A2A] md:block">
+          <p className="pointer-events-none absolute left-1/2 top-1/2 hidden max-w-[min(100%,28rem)] -translate-x-1/2 -translate-y-1/2 px-16 text-center text-base font-medium italic text-text-primary md:block">
             ✨ Early access is open, limited spots left
           </p>
           <div className="relative z-10 flex shrink-0 items-center gap-2">
-            <span className="hidden text-base font-normal text-[#2A2A2A] md:inline">
+            <span className="hidden text-base font-normal text-text-primary md:inline">
               Stay updated. Follow us on
             </span>
             <a
               href={INSTAGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[#2A2A2A]"
+              className="text-text-primary"
               aria-label="Instagram"
             >
-              <InstagramGlyph className="h-5 w-5 shrink-0 text-[#2A2A2A]" />
+              <InstagramGlyph className="h-5 w-5 shrink-0 text-text-primary" />
             </a>
           </div>
         </div>
@@ -483,10 +483,10 @@ export default function HomePage() {
           transition={{ duration: 0.5 }}
           className={`mx-auto flex max-w-[1280px] flex-col items-center pb-12 pt-[60px] text-center ${sectionPx}`}
         >
-          <h1 className="mb-6 max-w-[20ch] text-center text-[48px] font-bold leading-[1.05] text-[#2A2A2A] md:max-w-none md:text-[78px] md:leading-[88px]">
+          <h1 className="mb-6 max-w-[20ch] text-center text-[48px] font-bold leading-[1.05] text-text-primary md:max-w-none md:text-[78px] md:leading-[88px]">
             Outfit crisis? Ab nahi.
           </h1>
-          <div className="mb-12 space-y-2 text-center text-[22px] font-normal leading-[30px] text-[#2A2A2A] md:space-y-0 md:text-[40px] md:leading-[60px]">
+          <div className="mb-12 space-y-2 text-center text-[22px] font-normal leading-[30px] text-text-primary md:space-y-0 md:text-[40px] md:leading-[60px]">
             <p>
               Upload your wardrobe, pick your vibe, and let AI do the rest.
             </p>
@@ -505,7 +505,7 @@ export default function HomePage() {
           {...fadeUp}
           className={`mx-auto max-w-[1280px] pb-[60px] pt-[60px] ${sectionPx}`}
         >
-          <h2 className="mb-10 text-center text-[36px] font-bold leading-tight text-[#2A2A2A] md:mb-16 md:text-[60px] md:leading-[88px]">
+          <h2 className="mb-10 text-center text-[36px] font-bold leading-tight text-text-primary md:mb-16 md:text-[60px] md:leading-[88px]">
             Struggle we all have
           </h2>
           <div className="grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-12">
@@ -516,10 +516,10 @@ export default function HomePage() {
                 alt="Last moment panic illustration"
                 className="mb-5 h-auto max-h-[220px] w-full max-w-[330px] object-contain md:max-h-[250px]"
               />
-              <h3 className="mb-4 text-center text-[32px] font-medium leading-[44px] text-[#2A2A2A]">
+              <h3 className="mb-4 text-center text-[32px] font-medium leading-[44px] text-text-primary">
                 Last moment panic
               </h3>
-              <p className="max-w-[320px] text-center text-[20px] font-normal leading-[28px] text-[#2A2A2A]">
+              <p className="max-w-[320px] text-center text-[20px] font-normal leading-[28px] text-text-primary">
                 You&apos;re late. You&apos;ve tried on 4 outfits. You hate all
                 of them. You go with the black top. Again.
               </p>
@@ -531,10 +531,10 @@ export default function HomePage() {
                 alt="Full wardrobe illustration"
                 className="mb-5 h-auto max-h-[220px] w-full max-w-[330px] object-contain md:max-h-[250px]"
               />
-              <h3 className="mb-4 text-center text-[32px] font-medium leading-[44px] text-[#2A2A2A]">
+              <h3 className="mb-4 text-center text-[32px] font-medium leading-[44px] text-text-primary">
                 The full-wardrobe
               </h3>
-              <p className="max-w-[320px] text-center text-[20px] font-normal leading-[28px] text-[#2A2A2A]">
+              <p className="max-w-[320px] text-center text-[20px] font-normal leading-[28px] text-text-primary">
                 You own so many clothes but somehow feel like you have nothing
                 to wear. Your wardrobe is basically a storage unit.
               </p>
@@ -546,10 +546,10 @@ export default function HomePage() {
                 alt="Shopping trap illustration"
                 className="mb-5 h-auto max-h-[220px] w-full max-w-[330px] object-contain md:max-h-[250px]"
               />
-              <h3 className="mb-4 text-center text-[32px] font-medium leading-[44px] text-[#2A2A2A]">
+              <h3 className="mb-4 text-center text-[32px] font-medium leading-[44px] text-text-primary">
                 The shopping trap
               </h3>
-              <p className="max-w-[320px] text-center text-[20px] font-normal leading-[28px] text-[#2A2A2A]">
+              <p className="max-w-[320px] text-center text-[20px] font-normal leading-[28px] text-text-primary">
                 You keep buying new things hoping it&apos;ll fix it. But real
                 problem is you don&apos;t know what you already have.
               </p>
@@ -563,13 +563,13 @@ export default function HomePage() {
           {...fadeUp}
           className={`mx-auto mb-5 mt-10 max-w-[1280px] ${sectionPx}`}
         >
-          <div className="flex min-h-0 w-full flex-col items-center justify-center rounded-[24px] bg-[#D0CDC7] p-8 text-center md:min-h-[680px] md:p-16">
-            <h2 className="mb-6 text-[36px] font-bold leading-tight text-[#2A2A2A] md:text-[52px] md:leading-[1.15]">
+          <div className="flex min-h-0 w-full flex-col items-center justify-center rounded-[24px] bg-brand-surface p-8 text-center md:min-h-[680px] md:p-16">
+            <h2 className="mb-6 text-[36px] font-bold leading-tight text-text-primary md:text-[52px] md:leading-[1.15]">
               Join now and get
               <br />
               3 months of Pro free.
             </h2>
-            <p className="mb-10 max-w-3xl text-[22px] font-normal leading-[32px] text-[#2A2A2A] md:mb-16 md:text-[32px] md:leading-[44px]">
+            <p className="mb-10 max-w-3xl text-[22px] font-normal leading-[32px] text-text-primary md:mb-16 md:text-[32px] md:leading-[44px]">
               When we launch publicly, Pro will be ₹299/month. Early access
               members lock in their free months. No catch. No auto-charge. Just
               first-mover love.
@@ -581,10 +581,10 @@ export default function HomePage() {
 
       <motion.footer
         {...fadeUp}
-        className="border-t border-[rgba(42,42,42,0.1)] bg-[#EDEAE4]"
+        className="border-t border-[rgba(42,42,42,0.1)] bg-brand-bg"
       >
         <div
-          className={`mx-auto flex w-full min-w-0 max-w-[1280px] flex-col items-center gap-4 py-8 text-sm text-[#8A8680] md:h-14 md:flex-row md:items-center md:justify-between md:gap-0 md:py-0 md:leading-none ${sectionPx}`}
+          className={`mx-auto flex w-full min-w-0 max-w-[1280px] flex-col items-center gap-4 py-8 text-sm text-text-muted md:h-14 md:flex-row md:items-center md:justify-between md:gap-0 md:py-0 md:leading-none ${sectionPx}`}
         >
           <img
             src={STYLEMYLOOK_LOGO_URL}
@@ -595,11 +595,11 @@ export default function HomePage() {
             Made with ❤️ and way too much AI in India 🇮🇳
           </p>
           <div className="flex shrink-0 flex-wrap items-center justify-center gap-1 md:justify-end">
-            <a href="#" className="hover:text-[#1C1C1C]">
+            <a href="#" className="hover:text-text-primary">
               Privacy Policy
             </a>
             <span aria-hidden> · </span>
-            <a href="#" className="hover:text-[#1C1C1C]">
+            <a href="#" className="hover:text-text-primary">
               Contact Us
             </a>
             <span aria-hidden> · </span>
@@ -607,7 +607,7 @@ export default function HomePage() {
               href={INSTAGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-[#1C1C1C]"
+              className="hover:text-text-primary"
             >
               Instagram
             </a>

@@ -17,8 +17,8 @@ export default function AppGroupLayout({ children }: { children: ReactNode }) {
     <div
       className={
         hideNav
-          ? 'min-h-screen bg-[#FAF7F2]'
-          : 'min-h-screen bg-[#FAF7F2] pb-[calc(4.5rem+env(safe-area-inset-bottom))]'
+          ? 'min-h-screen bg-brand-bg'
+          : 'min-h-screen bg-brand-bg pb-[calc(4.5rem+env(safe-area-inset-bottom))]'
       }
     >
       {children}
