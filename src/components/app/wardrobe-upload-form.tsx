@@ -56,8 +56,6 @@ export function WardrobeUploadForm({
 
   const [limitModalOpen, setLimitModalOpen] = useState(false)
   const [limitChecking, setLimitChecking] = useState(false)
-  const cameraInputRef = useRef<HTMLInputElement>(null)
-  const galleryInputRef = useRef<HTMLInputElement>(null)
 
   const ensureProfileRow = useCallback(
     async (userId: string) => {
@@ -105,46 +103,6 @@ export function WardrobeUploadForm({
     },
     [supabase, ensureProfileRow]
   )
-
-  const openFilePicker = useCallback(async () => {
-    if (limitChecking) return
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    // If not signed in, keep current behavior (upload will likely fail anyway).
-    if (!user) {
-      fileInputRef.current?.click()
-      return
-    }
-
-    setLimitChecking(true)
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('plan')
-        .eq('id', user.id)
-        .maybeSingle()
-
-      const { count } = await supabase
-        .from('wardrobe_items')
-        .select('id', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-
-      const plan = profile?.plan ?? 'free'
-      const wardrobeCount = count ?? 0
-
-      if (plan === 'free' && wardrobeCount >= 50) {
-        setLimitModalOpen(true)
-        return
-      }
-
-      fileInputRef.current?.click()
-    } finally {
-      setLimitChecking(false)
-    }
-  }, [supabase, limitChecking])
 
   const uploadOne = useCallback(
     async (row: Row) => {
@@ -216,7 +174,39 @@ export function WardrobeUploadForm({
   const onFiles = useCallback(
     async (list: FileList | null) => {
       if (!list?.length) return
+      if (limitChecking) return
+      setLimitChecking(true)
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('plan')
+          .eq('id', user.id)
+          .maybeSingle()
+
+        const { count } = await supabase
+          .from('wardrobe_items')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+
+        const plan = profile?.plan ?? 'free'
+        const wardrobeCount = count ?? 0
+        if (plan === 'free' && wardrobeCount >= 50) {
+          setLimitChecking(false)
+          setLimitModalOpen(true)
+          return
+        }
+      }
+
       const files = Array.from(list).filter((f) => f.type.startsWith('image/'))
+      if (!files.length) {
+        setLimitChecking(false)
+        return
+      }
       const newRows: Row[] = files.map((file) => ({
         key: crypto.randomUUID(),
         file,
@@ -230,8 +220,10 @@ export function WardrobeUploadForm({
       for (const row of newRows) {
         await uploadOne(row)
       }
+
+      setLimitChecking(false)
     },
-    [uploadOne]
+    [uploadOne, supabase, limitChecking]
   )
 
   useEffect(() => {
@@ -284,69 +276,29 @@ export function WardrobeUploadForm({
           </motion.div>
         ) : null}
 
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={(e) => {
-            onFiles(e.target.files)
-            e.target.value = ''
-          }}
-        />
-        <input
-          ref={cameraInputRef}
-          id="camera-upload-input"
-          type="file"
-          accept="image/*"
-          capture="environment"
-          multiple
-          className="hidden"
-          onChange={(e) => {
-            onFiles(e.target.files)
-            e.target.value = ''
-          }}
-        />
-        <input
-          ref={galleryInputRef}
-          id="gallery-upload-input"
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={(e) => {
-            onFiles(e.target.files)
-            e.target.value = ''
-          }}
-        />
-
-        <div
-          className="mx-auto flex w-full max-w-[860px] flex-col items-center justify-center rounded-[24px] border-2 border-dashed border-[#E3DDCF] bg-white px-5 py-6 transition-colors hover:border-text-primary hover:bg-brand-bg md:min-h-[320px] md:px-8 md:py-8"
-          onClick={() => void openFilePicker()}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault()
-              void openFilePicker()
-            }
-          }}
-        >
+        <div className="mx-auto flex w-full max-w-[860px] flex-col items-center justify-center rounded-[24px] border-2 border-dashed border-[#E3DDCF] bg-white px-5 py-6 transition-colors hover:border-text-primary hover:bg-brand-bg md:min-h-[320px] md:px-8 md:py-8">
           <div className="flex w-full max-w-[760px] flex-col items-stretch gap-4 md:flex-row md:items-center">
             <label
-              htmlFor="camera-upload-input"
               className="group relative flex flex-1 cursor-pointer flex-col items-center rounded-2xl bg-brand-bg p-8 text-center transition-colors hover:bg-brand-surface"
-              onClick={(e) => {
-                e.stopPropagation()
-                cameraInputRef.current?.click()
-              }}
             >
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                onChange={(e) => {
+                  void onFiles(e.target.files)
+                  e.target.value = ''
+                }}
+              />
               <Camera className="mb-4 h-12 w-12 text-text-primary" />
               <p className="text-[22px] font-semibold text-text-primary">
                 Take a photo
               </p>
               <p className="mt-1 text-sm text-text-secondary">Use your camera</p>
+              <p className="mt-1 text-xs text-text-muted">
+                Tap again to add another photo
+              </p>
             </label>
 
             <div className="hidden items-center justify-center md:flex">
@@ -356,13 +308,19 @@ export function WardrobeUploadForm({
             </div>
 
             <label
-              htmlFor="gallery-upload-input"
               className="group relative flex flex-1 cursor-pointer flex-col items-center rounded-2xl bg-brand-bg p-8 text-center transition-colors hover:bg-brand-surface"
-              onClick={(e) => {
-                e.stopPropagation()
-                galleryInputRef.current?.click()
-              }}
             >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                onChange={(e) => {
+                  void onFiles(e.target.files)
+                  e.target.value = ''
+                }}
+              />
               <ImagePlus className="mb-4 h-12 w-12 text-text-primary" />
               <p className="text-[22px] font-semibold text-text-primary">
                 Upload from gallery
