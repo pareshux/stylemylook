@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { Camera, ImagePlus, Loader2, X } from 'lucide-react'
+import { Loader2, Upload, X } from 'lucide-react'
 
 import { createClient } from '@/lib/supabase/client'
 import { WARDROBE_BUCKET } from '@/lib/storage'
@@ -15,13 +15,11 @@ type Row = {
   key: string
   file: File
   preview: string
-  /** uploading → storage in flight; done = storage succeeded (DB may still be syncing); error = storage failed */
   status: 'uploading' | 'done' | 'error'
   label: string
   itemId?: string
   storagePath?: string
   imageUrl?: string
-  /** Set when storage worked but wardrobe_items insert failed (e.g. missing profiles row) */
   dbError?: string | null
 }
 
@@ -36,7 +34,6 @@ export function WardrobeUploadForm({
   subtext,
   completeLabel,
   onComplete,
-  floatingComplete = true,
 }: {
   heading?: string
   subtext?: string
@@ -46,16 +43,22 @@ export function WardrobeUploadForm({
 }) {
   const supabase = createClient()
   const router = useRouter()
+
   const fileInputRef = useRef<HTMLInputElement>(null)
   const rowsRef = useRef<Row[]>([])
   const [rows, setRows] = useState<Row[]>([])
-  rowsRef.current = rows
-
-  /** User can continue once files are in Storage (home/onboarding flow), even if DB row failed */
-  const doneCount = rows.filter((r) => r.storagePath).length
-
+  const [pendingFiles, setPendingFiles] = useState<File[]>([])
   const [limitModalOpen, setLimitModalOpen] = useState(false)
   const [limitChecking, setLimitChecking] = useState(false)
+
+  rowsRef.current = rows
+
+  const doneCount = rows.filter((r) => r.storagePath).length
+  const totalCount = rows.length
+  const uploadingCount = rows.filter((r) => r.status === 'uploading').length
+  const finishedCount = totalCount - uploadingCount
+  const progressPct =
+    totalCount > 0 ? Math.round((finishedCount / totalCount) * 100) : 0
 
   const ensureProfileRow = useCallback(
     async (userId: string) => {
@@ -109,6 +112,7 @@ export function WardrobeUploadForm({
       const {
         data: { user },
       } = await supabase.auth.getUser()
+
       if (!user) {
         setRows((prev) =>
           prev.map((r) =>
@@ -129,9 +133,6 @@ export function WardrobeUploadForm({
         })
 
       if (upErr) {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('[wardrobe upload] storage:', upErr.message)
-        }
         setRows((prev) =>
           prev.map((r) =>
             r.key === row.key ? { ...r, status: 'error' as const } : r
@@ -140,10 +141,7 @@ export function WardrobeUploadForm({
         return
       }
 
-      const { data: pub } = supabase.storage
-        .from(WARDROBE_BUCKET)
-        .getPublicUrl(path)
-
+      const { data: pub } = supabase.storage.from(WARDROBE_BUCKET).getPublicUrl(path)
       const publicUrl = pub.publicUrl
 
       const { itemId, error: dbMsg } = await insertWardrobeRow({
@@ -171,12 +169,18 @@ export function WardrobeUploadForm({
     [supabase, insertWardrobeRow]
   )
 
-  const onFiles = useCallback(
-    async (list: FileList | null) => {
-      if (!list?.length) return
-      if (limitChecking) return
-      setLimitChecking(true)
+  const handleFilesSelected = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const list = e.target.files
+      const newFiles = Array.from(list || []).filter((f) =>
+        f.type.startsWith('image/')
+      )
+      if (!newFiles.length || limitChecking) {
+        e.target.value = ''
+        return
+      }
 
+      setLimitChecking(true)
       const {
         data: { user },
       } = await supabase.auth.getUser()
@@ -193,21 +197,17 @@ export function WardrobeUploadForm({
           .select('id', { count: 'exact', head: true })
           .eq('user_id', user.id)
 
-        const plan = profile?.plan ?? 'free'
-        const wardrobeCount = count ?? 0
-        if (plan === 'free' && wardrobeCount >= 50) {
-          setLimitChecking(false)
+        if ((profile?.plan ?? 'free') === 'free' && (count ?? 0) >= 50) {
           setLimitModalOpen(true)
+          setLimitChecking(false)
+          e.target.value = ''
           return
         }
       }
 
-      const files = Array.from(list).filter((f) => f.type.startsWith('image/'))
-      if (!files.length) {
-        setLimitChecking(false)
-        return
-      }
-      const newRows: Row[] = files.map((file) => ({
+      setPendingFiles((prev) => [...prev, ...newFiles])
+
+      const newRows: Row[] = newFiles.map((file) => ({
         key: crypto.randomUUID(),
         file,
         preview: URL.createObjectURL(file),
@@ -216,15 +216,17 @@ export function WardrobeUploadForm({
       }))
 
       setRows((prev) => [...prev, ...newRows])
-
-      for (const row of newRows) {
-        await uploadOne(row)
-      }
-
+      e.target.value = ''
       setLimitChecking(false)
+
+      await Promise.all(newRows.map((row) => uploadOne(row)))
     },
-    [uploadOne, supabase, limitChecking]
+    [supabase, uploadOne, limitChecking]
   )
+
+  function openPicker() {
+    if (!limitChecking) fileInputRef.current?.click()
+  }
 
   useEffect(() => {
     return () => {
@@ -234,9 +236,23 @@ export function WardrobeUploadForm({
 
   function removeQueuedRow(rowKey: string) {
     const row = rowsRef.current.find((r) => r.key === rowKey)
-    if (!row) return
+    if (!row || row.storagePath) return
     URL.revokeObjectURL(row.preview)
     setRows((prev) => prev.filter((r) => r.key !== rowKey))
+    setPendingFiles((prev) => {
+      const idx = rowsRef.current.findIndex((r) => r.key === rowKey)
+      if (idx < 0 || idx >= prev.length) return prev
+      return prev.filter((_, i) => i !== idx)
+    })
+  }
+
+  async function retryUpload(rowKey: string) {
+    const row = rowsRef.current.find((r) => r.key === rowKey)
+    if (!row) return
+    setRows((prev) =>
+      prev.map((r) => (r.key === rowKey ? { ...r, status: 'uploading' } : r))
+    )
+    await uploadOne(row)
   }
 
   async function updateLabel(rowKey: string, label: string, itemId?: string) {
@@ -249,12 +265,6 @@ export function WardrobeUploadForm({
       .update({ user_notes: label.trim() || null })
       .eq('id', itemId)
   }
-
-  const totalCount = rows.length
-  const uploadingCount = rows.filter((r) => r.status === 'uploading').length
-  const finishedCount = totalCount - uploadingCount
-  const progressPct =
-    totalCount > 0 ? Math.round((finishedCount / totalCount) * 100) : 0
 
   return (
     <div className="min-h-screen bg-brand-bg pb-28">
@@ -276,152 +286,154 @@ export function WardrobeUploadForm({
           </motion.div>
         ) : null}
 
-        <div className="mx-auto flex w-full max-w-[860px] flex-col items-center justify-center rounded-[24px] border-2 border-dashed border-[#E3DDCF] bg-white px-5 py-6 transition-colors hover:border-text-primary hover:bg-brand-bg md:min-h-[320px] md:px-8 md:py-8">
-          <div className="flex w-full max-w-[760px] flex-col items-stretch gap-4 md:flex-row md:items-center">
-            <label
-              className="group relative flex flex-1 cursor-pointer flex-col items-center rounded-2xl bg-brand-bg p-8 text-center transition-colors hover:bg-brand-surface"
-            >
-              <input
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                onChange={(e) => {
-                  void onFiles(e.target.files)
-                  e.target.value = ''
-                }}
-              />
-              <Camera className="mb-4 h-12 w-12 text-text-primary" />
-              <p className="text-[22px] font-semibold text-text-primary">
-                Take a photo
-              </p>
-              <p className="mt-1 text-sm text-text-secondary">Use your camera</p>
-              <p className="mt-1 text-xs text-text-muted">
-                Tap again to add another photo
-              </p>
-            </label>
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          ref={fileInputRef}
+          style={{ display: 'none' }}
+          onChange={(e) => {
+            void handleFilesSelected(e)
+          }}
+        />
 
-            <div className="hidden items-center justify-center md:flex">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-sm font-medium text-text-muted">
-                or
-              </span>
-            </div>
-
-            <label
-              className="group relative flex flex-1 cursor-pointer flex-col items-center rounded-2xl bg-brand-bg p-8 text-center transition-colors hover:bg-brand-surface"
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                onChange={(e) => {
-                  void onFiles(e.target.files)
-                  e.target.value = ''
-                }}
-              />
-              <ImagePlus className="mb-4 h-12 w-12 text-text-primary" />
-              <p className="text-[22px] font-semibold text-text-primary">
-                Upload from gallery
-              </p>
-              <p className="mt-1 text-sm text-text-secondary">
-                Select multiple at once
-              </p>
-            </label>
-          </div>
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={openPicker}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              openPicker()
+            }
+          }}
+          className="mx-auto flex min-h-[280px] w-full max-w-[860px] cursor-pointer flex-col items-center justify-center rounded-[24px] border-2 border-dashed border-[#E3DDCF] bg-white px-6 py-10 text-center transition-colors hover:border-text-primary hover:bg-brand-bg"
+        >
+          <Upload className="mb-4 h-14 w-14 text-text-primary" />
+          <h2 className="text-[24px] font-bold text-text-primary">
+            Upload wardrobe items
+          </h2>
+          <p className="mt-2 max-w-xl text-[16px] text-text-secondary">
+            Add photos of your clothes, shoes, bags and accessories
+          </p>
+          <Button
+            type="button"
+            className="mt-6 rounded-full px-8 py-3"
+            onClick={(e) => {
+              e.stopPropagation()
+              openPicker()
+            }}
+          >
+            Choose photos
+          </Button>
         </div>
 
-        {uploadingCount > 0 ? (
-          <div className="mx-auto mt-4 w-full max-w-[860px]">
-            <p className="mb-2 text-sm text-text-secondary">
-              Uploading {finishedCount} of {totalCount} photos...
-            </p>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-brand-border">
-              <div
-                className="h-full rounded-full bg-text-primary transition-all duration-300"
-                style={{ width: `${progressPct}%` }}
-              />
-            </div>
-          </div>
-        ) : null}
-
         {rows.length === 0 ? (
-          <p className="mt-4 text-center text-[14px] text-text-muted">
-            💡 Tip: You can select all your clothes at once from your gallery
+          <p className="mt-3 text-center text-[14px] text-text-muted">
+            💡 Tip: You can select all your photos at once from your library
           </p>
         ) : null}
 
         {rows.length > 0 ? (
-          <div className="mx-auto mt-8 grid max-w-[960px] grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
-            {rows.map((row) => (
-              <motion.div
-                layout
-                key={row.key}
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="overflow-hidden rounded-2xl border border-brand-border/70 bg-white shadow-sm"
-              >
-                <div className="relative aspect-square bg-brand-surface">
-                  <Image
-                    src={row.preview}
-                    alt=""
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 45vw, (max-width: 1280px) 30vw, 22vw"
-                    unoptimized
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeQueuedRow(row.key)}
-                    className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm transition-colors hover:bg-black/60"
-                    aria-label="Remove photo"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                  <span
-                    className="absolute right-2 top-2 rounded-full px-2 py-1 text-[10px] font-semibold text-white backdrop-blur-sm"
-                    title={row.dbError ?? undefined}
-                  >
-                    {row.status === 'uploading' ? (
-                      <span className="flex items-center gap-1 rounded-full bg-amber-500/90 px-2 py-0.5">
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                        Uploading...
-                      </span>
-                    ) : row.status === 'error' ? (
-                      <span className="rounded-full bg-red-500/90 px-2 py-0.5">
-                        Error
-                      </span>
-                    ) : (
-                      <span className="rounded-full bg-emerald-600/90 px-2 py-0.5">
-                        ✓ Added
-                      </span>
-                    )}
-                  </span>
-                </div>
-                <div className="p-2">
-                  {row.dbError ? (
-                    <p
-                      className="mb-2 text-[10px] leading-snug text-amber-800/90"
-                      title={row.dbError}
-                    >
-                      Uploaded to storage, but saving to your closet failed.
-                    </p>
-                  ) : null}
-                  {row.status === 'done' ? (
-                    <Input
-                      placeholder="Label (optional)"
-                      value={row.label}
-                      onChange={(e) =>
-                        updateLabel(row.key, e.target.value, row.itemId)
-                      }
-                      className="h-9 rounded-lg bg-white/80 text-[13px] backdrop-blur-sm"
+          <>
+            <div className="mx-auto mt-8 grid max-w-[960px] grid-cols-3 gap-3 md:grid-cols-4">
+              {rows.map((row) => (
+                <motion.div
+                  layout
+                  key={row.key}
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="overflow-hidden rounded-2xl border border-brand-border/70 bg-white"
+                >
+                  <div className="relative aspect-square bg-brand-surface">
+                    <Image
+                      src={row.preview}
+                      alt=""
+                      fill
+                      className="h-full w-full object-cover"
+                      unoptimized
                     />
-                  ) : null}
+
+                    {!row.storagePath ? (
+                      <button
+                        type="button"
+                        onClick={() => removeQueuedRow(row.key)}
+                        className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm"
+                        aria-label="Remove photo"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    ) : null}
+
+                    <div className="absolute right-2 top-2">
+                      {row.status === 'uploading' ? (
+                        <span className="flex items-center gap-1 rounded-full bg-amber-500/90 px-2 py-0.5 text-[10px] font-semibold text-white">
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          Uploading...
+                        </span>
+                      ) : row.status === 'done' ? (
+                        <span className="rounded-full bg-emerald-600/90 px-2 py-0.5 text-[10px] font-semibold text-white">
+                          ✓ Added
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-red-600/90 px-2 py-0.5 text-[10px] font-semibold text-white">
+                          Error
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="p-2">
+                    {row.status === 'error' ? (
+                      <button
+                        type="button"
+                        onClick={() => void retryUpload(row.key)}
+                        className="mb-2 text-[11px] font-medium text-red-600 underline"
+                      >
+                        Retry upload
+                      </button>
+                    ) : null}
+
+                    {row.status === 'done' ? (
+                      <Input
+                        placeholder="Label (optional)"
+                        value={row.label}
+                        onChange={(e) =>
+                          updateLabel(row.key, e.target.value, row.itemId)
+                        }
+                        className="h-9 rounded-lg bg-white/80 text-[13px] backdrop-blur-sm"
+                      />
+                    ) : null}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="mx-auto mt-5 flex max-w-[960px] justify-center">
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-full border-[#2A2A2A] text-[#2A2A2A]"
+                onClick={openPicker}
+              >
+                + Add more photos
+              </Button>
+            </div>
+
+            {uploadingCount > 0 ? (
+              <div className="mx-auto mt-4 w-full max-w-[960px]">
+                <p className="mb-2 text-sm text-text-secondary">
+                  Uploading {finishedCount} of {totalCount} photos...
+                </p>
+                <div className="h-1 w-full overflow-hidden rounded bg-brand-border">
+                  <div
+                    className="h-full rounded bg-text-primary transition-all duration-300"
+                    style={{ width: `${progressPct}%` }}
+                  />
                 </div>
-              </motion.div>
-            ))}
-          </div>
+              </div>
+            ) : null}
+          </>
         ) : null}
 
         {doneCount > 0 ? (
@@ -429,7 +441,7 @@ export function WardrobeUploadForm({
             <div className="mx-auto mt-8 hidden w-full max-w-[860px] justify-center md:flex">
               <Button
                 type="button"
-                className="rounded-full px-12 py-4 text-[18px] font-semibold"
+                className="h-14 rounded-full px-12 text-[18px] font-semibold"
                 onClick={onComplete}
               >
                 {completeLabel}
@@ -439,7 +451,7 @@ export function WardrobeUploadForm({
             <div className="fixed bottom-6 left-4 right-4 z-50 md:hidden">
               <Button
                 type="button"
-                className="w-full rounded-full px-12 py-4 text-[18px] font-semibold shadow-lg"
+                className="h-14 w-full rounded-full text-[18px] font-semibold shadow-lg"
                 onClick={onComplete}
               >
                 {completeLabel}
@@ -486,6 +498,11 @@ export function WardrobeUploadForm({
           </div>
         </div>
       ) : null}
+
+      {/* keep state referenced for explicit multi-select queue semantics */}
+      <span className="hidden" aria-hidden>
+        {pendingFiles.length}
+      </span>
     </div>
   )
 }
