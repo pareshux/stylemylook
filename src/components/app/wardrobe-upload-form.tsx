@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/client'
 import { WARDROBE_BUCKET } from '@/lib/storage'
 import { Button } from '@/components/button'
 import { Input } from '@/components/ui/input'
+import { InAppCamera } from '@/components/app/InAppCamera'
 
 type Row = {
   key: string
@@ -50,6 +51,7 @@ export function WardrobeUploadForm({
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
   const [limitModalOpen, setLimitModalOpen] = useState(false)
   const [limitChecking, setLimitChecking] = useState(false)
+  const [showCamera, setShowCamera] = useState(false)
 
   rowsRef.current = rows
 
@@ -169,16 +171,10 @@ export function WardrobeUploadForm({
     [supabase, insertWardrobeRow]
   )
 
-  const handleFilesSelected = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const list = e.target.files
-      const newFiles = Array.from(list || []).filter((f) =>
-        f.type.startsWith('image/')
-      )
-      if (!newFiles.length || limitChecking) {
-        e.target.value = ''
-        return
-      }
+  const processNewFiles = useCallback(
+    async (incomingFiles: File[]) => {
+      const newFiles = incomingFiles.filter((f) => f.type.startsWith('image/'))
+      if (!newFiles.length || limitChecking) return
 
       setLimitChecking(true)
       const {
@@ -200,7 +196,6 @@ export function WardrobeUploadForm({
         if ((profile?.plan ?? 'free') === 'free' && (count ?? 0) >= 50) {
           setLimitModalOpen(true)
           setLimitChecking(false)
-          e.target.value = ''
           return
         }
       }
@@ -216,12 +211,21 @@ export function WardrobeUploadForm({
       }))
 
       setRows((prev) => [...prev, ...newRows])
-      e.target.value = ''
       setLimitChecking(false)
 
       await Promise.all(newRows.map((row) => uploadOne(row)))
     },
     [supabase, uploadOne, limitChecking]
+  )
+
+  const handleFilesSelected = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const list = e.target.files
+      const newFiles = Array.from(list || [])
+      e.target.value = ''
+      await processNewFiles(newFiles)
+    },
+    [processNewFiles]
   )
 
   function openPicker() {
@@ -325,6 +329,17 @@ export function WardrobeUploadForm({
             }}
           >
             Choose photos
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            className="mt-3 rounded-full border-[#2A2A2A] text-[#2A2A2A]"
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowCamera(true)
+            }}
+          >
+            Take photos
           </Button>
         </div>
 
@@ -497,6 +512,15 @@ export function WardrobeUploadForm({
             </div>
           </div>
         </div>
+      ) : null}
+
+      {showCamera ? (
+        <InAppCamera
+          onCapture={(files) => {
+            void processNewFiles(files)
+          }}
+          onClose={() => setShowCamera(false)}
+        />
       ) : null}
 
       {/* keep state referenced for explicit multi-select queue semantics */}
