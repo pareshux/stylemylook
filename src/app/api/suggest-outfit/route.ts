@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
+import Anthropic, { AuthenticationError } from '@anthropic-ai/sdk'
 import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages'
 
 import { eventLabel } from '@/lib/events'
@@ -13,10 +13,12 @@ import {
 const model =
   process.env.ANTHROPIC_MODEL || 'claude-opus-4-5-20251101'
 
-/** Strips whitespace and outer quotes — common causes of `invalid x-api-key`. */
+/** Strips BOM, outer quotes, and uses first line only — common causes of `invalid x-api-key`. */
 function normalizeAnthropicApiKey(raw: string | undefined): string | null {
   if (raw == null || raw === '') return null
-  let k = raw.trim()
+  let k = raw.replace(/^\uFEFF/, '').trim()
+  const firstLine = k.split(/\r?\n/, 1)[0]?.trim() ?? ''
+  k = firstLine
   if (k.length >= 2) {
     const q = k[0]
     if (
@@ -146,8 +148,11 @@ export async function POST(request: Request) {
     )
   }
 
+  // Pass authToken: null so ANTHROPIC_AUTH_TOKEN in env is not also sent as Bearer;
+  // dual headers can produce 401 / invalid x-api-key.
   const client = new Anthropic({
     apiKey,
+    authToken: null,
   })
 
   let body: { eventType?: string }
@@ -277,16 +282,30 @@ Return ONLY valid JSON (no markdown):
     textOut = block && block.type === 'text' ? block.text : ''
   } catch (error: any) {
     const status = error?.status as number | undefined
+    const nestedType =
+      error?.error && typeof error.error === 'object' && 'type' in error.error
+        ? (error.error as { type?: string }).type
+        : undefined
     console.error('Anthropic API error:', {
       message: error?.message,
       status,
       error: error?.error,
     })
-    if (status === 401) {
+    const isAuthFailure =
+      error instanceof AuthenticationError ||
+      status === 401 ||
+      nestedType === 'authentication_error' ||
+      (typeof error?.message === 'string' &&
+        error.message.includes('authentication_error'))
+    if (isAuthFailure) {
+      console.error('Anthropic auth hint:', {
+        keyLength: apiKey.length,
+        keyLooksLikeAnthropic: apiKey.startsWith('sk-ant-'),
+      })
       return NextResponse.json(
         {
           error:
-            'Anthropic API key is invalid or expired. Create a new key at console.anthropic.com and set ANTHROPIC_API_KEY (no extra spaces or quotes) in .env.local and in Vercel project env.',
+            'Anthropic rejected the API key (401). Use a current secret key from console.anthropic.com (starts with sk-ant-). In .env.local / Vercel set ANTHROPIC_API_KEY only. If ANTHROPIC_AUTH_TOKEN is set, remove it or the SDK may send two auth headers. After changing env, restart dev and redeploy production.',
         },
         { status: 401 }
       )
