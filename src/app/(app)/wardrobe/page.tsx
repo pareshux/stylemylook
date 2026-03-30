@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Trash2, Eye, X, Plus, Check } from 'lucide-react'
+import { Trash2, Eye, X, Plus } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 import { WARDROBE_BUCKET } from '@/lib/storage'
@@ -216,7 +216,9 @@ export default function WardrobePage() {
                 <div
                   key={item.id}
                   className={`group relative aspect-square cursor-pointer overflow-hidden rounded-2xl bg-[#E3DDCF] transition-all duration-200 ${
-                    isSelected ? 'border-2 border-[#2A2A2A]' : 'border-2 border-transparent'
+                    isSelected
+                      ? 'ring-2 ring-[#2A2A2A] ring-offset-1 ring-offset-[#F5F3EC]'
+                      : ''
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -228,7 +230,9 @@ export default function WardrobePage() {
                   />
 
                   <div
-                    className={`absolute inset-0 bg-black/30 transition-opacity duration-200 ${
+                    className={`absolute inset-0 transition-opacity duration-200 ${
+                      isSelected ? 'bg-black/20' : 'bg-black/30'
+                    } ${
                       isSelected || isSelectionMode
                         ? 'opacity-100'
                         : 'opacity-0 group-hover:opacity-100'
@@ -242,16 +246,28 @@ export default function WardrobePage() {
                       e.stopPropagation()
                       toggleSelect(item.id)
                     }}
-                    className={`absolute left-2.5 top-2.5 z-10 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-white transition-all duration-200 ${
+                    className={`absolute left-2.5 top-2.5 z-10 flex h-[22px] w-[22px] items-center justify-center rounded-[6px] border-2 shadow-[0_1px_3px_rgba(0,0,0,0.2)] transition-all duration-150 ${
                       isSelected
-                        ? 'bg-[#2A2A2A] opacity-100'
-                        : isSelectionMode
-                          ? 'opacity-100'
-                          : 'opacity-0 group-hover:opacity-100'
-                    }`}
+                        ? 'border-[#2A2A2A] bg-[#2A2A2A] opacity-100'
+                        : 'border-white bg-white opacity-0 group-hover:opacity-100'
+                    } ${isSelectionMode ? '!opacity-100' : ''} `}
                   >
                     {isSelected ? (
-                      <Check className="h-2.5 w-2.5 stroke-[3] text-white" />
+                      <svg
+                        width="12"
+                        height="10"
+                        viewBox="0 0 12 10"
+                        fill="none"
+                        aria-hidden
+                      >
+                        <polyline
+                          points="1,5 4.5,8.5 11,1"
+                          stroke="white"
+                          strokeWidth="2.2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
                     ) : null}
                   </button>
 
