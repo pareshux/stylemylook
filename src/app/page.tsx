@@ -494,6 +494,10 @@ export default function HomePage() {
               Kyunki looking good shouldn&apos;t be this hard.
             </p>
           </div>
+          <p className="body-lg mb-6 max-w-[40rem] text-center">
+            When we launch publicly, Pro will be ₹299/month. Early access members
+            lock in their free months.
+          </p>
           <HeroWaitlistForm />
           <div className="mt-3 w-full">
             <LiveCounter />
