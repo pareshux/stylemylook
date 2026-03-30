@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import { Instrument_Sans } from 'next/font/google'
+import { Analytics } from '@vercel/analytics/next'
 
 import './globals.css'
 
@@ -25,6 +26,7 @@ export default function RootLayout({
     <html lang="en" className={instrumentSans.className}>
       <body className="min-h-screen bg-[#FAF7F2] text-[#1C1C1C] antialiased">
         {children}
+        <Analytics />
       </body>
     </html>
   )
