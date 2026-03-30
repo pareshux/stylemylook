@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 
 import { EVENT_CHIPS } from '@/lib/events'
-import { AppMaxWidth } from '@/components/app/app-max-width'
+import { cn } from '@/lib/utils'
 
 function greetingForNow() {
   const h = new Date().getHours()
@@ -13,34 +13,22 @@ function greetingForNow() {
   return 'Good evening'
 }
 
-export function HomeClient({ displayName }: { displayName: string }) {
+export function HomeClient({ firstName }: { firstName: string }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
     >
-      <header className="flex items-center justify-between border-b border-brand-border/60 px-4 py-3">
-        <span className="text-sm font-bold tracking-tight text-text-primary">
-          StyleAI 👗
-        </span>
-        <div
-          className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-[#E8724A] to-[#c95a38] text-sm font-bold text-white shadow-sm"
-          aria-hidden
-        >
-          {displayName.slice(0, 1).toUpperCase()}
-        </div>
-      </header>
-
-      <AppMaxWidth className="space-y-6 py-8">
-        <p className="text-center text-[0.9375rem] text-text-primary/70">
-          {greetingForNow()}, {displayName}! ✨
+      <div className="mx-auto max-w-[1280px] px-6 py-8 md:py-12">
+        <p className="mb-2 text-center text-[18px] font-normal text-[#4E4E4E]">
+          {greetingForNow()}, {firstName}! ✨
         </p>
-        <h1 className="text-center text-xl font-bold tracking-tight text-text-primary">
+        <h1 className="mb-8 text-center text-[32px] font-bold leading-tight text-[#2A2A2A] md:mb-12 md:text-[48px]">
           What are your plans today?
         </h1>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
           {EVENT_CHIPS.map((ev, i) => (
             <motion.div
               key={ev.id}
@@ -50,19 +38,28 @@ export function HomeClient({ displayName }: { displayName: string }) {
             >
               <Link
                 href={`/suggestions?event=${encodeURIComponent(ev.id)}`}
-                className="flex flex-col items-center rounded-2xl border border-brand-border/60 bg-white px-3 py-5 text-center shadow-sm transition-all active:scale-[0.98] hover:border-[#E8724A]/25 hover:shadow-md"
+                className={cn(
+                  'flex min-h-[120px] flex-col items-center justify-center gap-3 rounded-[20px] border border-[#E3DDCF] bg-white p-6 text-center shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-all duration-200 ease-in-out',
+                  'active:border-[#2A2A2A] active:bg-[#2A2A2A] active:shadow-[0_4px_16px_rgba(0,0,0,0.08)] active:[&_span]:text-white',
+                  'md:min-h-[160px]',
+                  'md:hover:scale-[1.02] md:hover:border-[#2A2A2A] md:hover:bg-[#E3DDCF] md:hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)]',
+                  'cursor-pointer'
+                )}
               >
-                <span className="text-3xl leading-none" aria-hidden>
+                <span
+                  className="text-[32px] leading-none text-[#2A2A2A] md:text-[40px]"
+                  aria-hidden
+                >
                   {ev.emoji}
                 </span>
-                <span className="mt-2 text-xs font-semibold leading-tight text-text-primary">
+                <span className="text-[14px] font-medium leading-tight text-[#2A2A2A] md:text-[16px]">
                   {ev.label}
                 </span>
               </Link>
             </motion.div>
           ))}
         </div>
-      </AppMaxWidth>
+      </div>
     </motion.div>
   )
 }

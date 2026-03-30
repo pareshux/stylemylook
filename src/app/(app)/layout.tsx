@@ -4,6 +4,8 @@ import type { ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 
 import { BottomNav } from '@/components/app/bottom-nav'
+import { TopNav } from '@/components/app/top-nav'
+import { cn } from '@/lib/utils'
 
 const HIDE_NAV_PREFIXES = ['/onboarding', '/suggestions', '/wardrobe/upload']
 
@@ -15,12 +17,14 @@ export default function AppGroupLayout({ children }: { children: ReactNode }) {
 
   return (
     <div
-      className={
-        hideNav
-          ? 'min-h-screen bg-brand-bg'
-          : 'min-h-screen bg-brand-bg pb-[calc(4.5rem+env(safe-area-inset-bottom))]'
-      }
+      className={cn(
+        'min-h-screen bg-[#F5F3EC]',
+        !hideNav &&
+          'pb-[calc(72px+max(0.5rem,env(safe-area-inset-bottom)))] md:pb-0',
+        !hideNav && 'md:pt-16'
+      )}
     >
+      {!hideNav ? <TopNav /> : null}
       {children}
       {!hideNav ? <BottomNav /> : null}
     </div>

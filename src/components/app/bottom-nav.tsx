@@ -2,44 +2,63 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { Heart, Shirt, User, type LucideIcon } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
-const tabs = [
-  { href: '/home', emoji: '🏠', label: 'Home' },
-  { href: '/wardrobe', emoji: '👗', label: 'Wardrobe' },
-  { href: '/saved', emoji: '♥', label: 'Saved' },
-  { href: '/profile', emoji: '👤', label: 'Profile' },
-] as const
+const tabs: ReadonlyArray<
+  | { href: string; label: string; logo: true }
+  | { href: string; label: string; logo: false; Icon: LucideIcon }
+> = [
+  { href: '/home', label: 'Home', logo: true },
+  { href: '/wardrobe', label: 'Wardrobe', logo: false, Icon: Shirt },
+  { href: '/saved', label: 'Saved', logo: false, Icon: Heart },
+  { href: '/profile', label: 'Profile', logo: false, Icon: User },
+]
 
 export function BottomNav() {
   const pathname = usePathname()
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#1C1C1C]/[0.08] bg-[#FAF7F2]/95 backdrop-blur-lg"
+      className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#E3DDCF] bg-[#F5F3EC] md:hidden"
       aria-label="Main navigation"
     >
-      <div className="mx-auto flex max-w-sm items-stretch justify-around px-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2">
-        {tabs.map(({ href, emoji, label }) => {
+      <div className="mx-auto flex min-h-[72px] max-w-sm items-stretch justify-around px-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1">
+        {tabs.map((tab) => {
+          const { href, label } = tab
+          const NavIcon = tab.logo ? null : tab.Icon
           const active =
             href === '/home'
               ? pathname === '/home'
               : pathname === href || pathname.startsWith(`${href}/`)
+          const inactiveClass = 'text-[#8A8680]'
+          const activeClass = 'text-[#2A2A2A]'
           return (
             <Link
               key={href}
               href={href}
               className={cn(
-                'flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl py-1.5 text-[0.65rem] font-semibold transition-colors',
-                active
-                  ? 'text-[#E8724A]'
-                  : 'text-[#1C1C1C]/45 hover:text-[#1C1C1C]/70'
+                'flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl py-1 text-[11px] font-medium transition-colors',
+                active ? activeClass : inactiveClass
               )}
             >
-              <span className="text-lg leading-none" aria-hidden>
-                {emoji}
-              </span>
+              {NavIcon == null ? (
+                <img
+                  src="/logo.svg"
+                  alt=""
+                  className={cn(
+                    'h-7 w-auto',
+                    active ? 'opacity-100' : 'opacity-55'
+                  )}
+                  aria-hidden
+                />
+              ) : (
+                <NavIcon
+                  className="size-6 shrink-0 stroke-[1.75]"
+                  aria-hidden
+                />
+              )}
               {label}
             </Link>
           )

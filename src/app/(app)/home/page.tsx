@@ -20,6 +20,7 @@ export default async function HomePage() {
   const meta = user.user_metadata as { full_name?: string } | undefined
   const displayName =
     meta?.full_name ?? user.email?.split('@')[0] ?? 'there'
+  const firstName = displayName.split(/\s+/)[0] || displayName
 
-  return <HomeClient displayName={displayName} />
+  return <HomeClient firstName={firstName} />
 }
