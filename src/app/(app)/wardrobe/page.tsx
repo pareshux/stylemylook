@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Trash2, Eye, X, Plus } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
+import { WardrobeUploadForm } from '@/components/app/wardrobe-upload-form'
 import { WARDROBE_BUCKET } from '@/lib/storage'
 
 interface WardrobeItem {
@@ -29,6 +30,7 @@ export default function WardrobePage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [previewItem, setPreviewItem] = useState<WardrobeItem | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [uploadOpen, setUploadOpen] = useState(false)
   const router = useRouter()
 
   const isSelectionMode = selectedIds.size > 0
@@ -178,7 +180,7 @@ export default function WardrobePage() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => router.push('/wardrobe/upload')}
+                  onClick={() => setUploadOpen(true)}
                   className="flex items-center gap-2 rounded-full bg-[#2A2A2A] px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-[#404040]"
                 >
                   <Plus className="h-4 w-4" />
@@ -200,7 +202,7 @@ export default function WardrobePage() {
             </p>
             <button
               type="button"
-              onClick={() => router.push('/wardrobe/upload')}
+              onClick={() => setUploadOpen(true)}
               className="rounded-full bg-[#2A2A2A] px-8 py-3 font-medium text-white"
             >
               Add your first item
@@ -310,6 +312,47 @@ export default function WardrobePage() {
       </div>
 
       <AnimatePresence>
+        {uploadOpen ? (
+          <motion.div
+            key="upload-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 px-4 py-8"
+            onClick={() => setUploadOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 24, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 24, scale: 0.98 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl bg-[#F5F3EC]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                aria-label="Close upload"
+                className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm transition-colors hover:bg-[#E3DDCF]"
+                onClick={() => setUploadOpen(false)}
+              >
+                <X className="h-4 w-4 text-[#2A2A2A]" />
+              </button>
+              <div className="flex-1 overflow-y-auto px-4 pb-6 pt-10 md:px-6">
+                <WardrobeUploadForm
+                  heading="Add to wardrobe 👗"
+                  subtext="Upload photos — same as your first setup. Add as many as you like."
+                  completeLabel="Done"
+                  floatingComplete={false}
+                  onComplete={() => {
+                    setUploadOpen(false)
+                    void load()
+                  }}
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+
         {previewItem ? (
           <motion.div
             role="presentation"
