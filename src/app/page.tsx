@@ -12,7 +12,7 @@ import {
   Upload,
   Zap,
 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
@@ -326,7 +326,61 @@ const mockupShell =
   'overflow-hidden rounded-2xl border border-[#E3DDCF] bg-white shadow-sm'
 
 function StepConnector() {
-  return <div className="mx-auto my-2 h-16 w-px bg-[#E3DDCF]" aria-hidden />
+  return <div className="mx-auto h-16 w-px bg-[#E3DDCF]" aria-hidden />
+}
+
+const stepGrid =
+  'grid grid-cols-1 items-center gap-16 md:grid-cols-2 md:gap-24'
+
+function LandingHeader() {
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20)
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  return (
+    <motion.header
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className={`fixed left-0 right-0 top-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? 'border-b border-[#E3DDCF] bg-[#F5F3EC]/95 shadow-sm backdrop-blur-md'
+          : 'border-b border-transparent bg-transparent'
+      }`}
+    >
+      <div
+        className={`relative mx-auto flex h-14 w-full max-w-[1280px] items-center justify-between ${sectionPx}`}
+      >
+        <img
+          src={STYLEMYLOOK_LOGO_URL}
+          alt="Style My Look"
+          className="relative z-10 h-8 w-auto shrink-0"
+        />
+        <p className="pointer-events-none absolute left-1/2 top-1/2 hidden max-w-[min(100%,28rem)] -translate-x-1/2 -translate-y-1/2 px-16 text-center text-base font-medium italic text-text-primary md:block">
+          ✨ Early access is open, limited spots left
+        </p>
+        <div className="relative z-10 flex shrink-0 items-center gap-2">
+          <span className="hidden text-base font-normal text-text-primary md:inline">
+            Stay updated. Follow us on
+          </span>
+          <a
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-text-primary"
+            aria-label="Instagram"
+          >
+            <InstagramGlyph className="h-5 w-5 shrink-0 text-text-primary" />
+          </a>
+        </div>
+      </div>
+    </motion.header>
+  )
 }
 
 function HowItWorksSection() {
@@ -347,7 +401,7 @@ function HowItWorksSection() {
         </header>
 
         <motion.div {...stepReveal} className="py-[60px]">
-          <div className="grid grid-cols-1 items-center gap-10 md:grid-cols-2 md:gap-20">
+          <div className={stepGrid}>
             <div className="min-w-0">
               <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-[#2A2A2A] text-[14px] font-bold text-white">
                 01
@@ -417,14 +471,32 @@ function HowItWorksSection() {
 
         <StepConnector />
 
-        <motion.div
-          {...stepReveal}
-          className="border-t border-[#E3DDCF] py-[60px]"
-        >
-          <div className="grid grid-cols-1 items-center gap-10 md:grid-cols-2 md:gap-20">
-            <div
-              className={`${mockupShell} order-2 md:order-1`}
-            >
+        <motion.div {...stepReveal} className="py-[60px]">
+          <div className={stepGrid}>
+            <div className="min-w-0">
+              <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-[#2A2A2A] text-[14px] font-bold text-white">
+                02
+              </div>
+              <h3 className="mb-4 text-[36px] font-bold leading-[1.2] text-[#2A2A2A]">
+                Tell us where you&apos;re going
+              </h3>
+              <p className="mb-6 text-[18px] font-normal leading-[1.7] text-[#4E4E4E]">
+                Party? Work meeting? Dinner date? Festival? Just tap your event
+                and the AI takes it from there — no lengthy questionnaires, no
+                style quizzes.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
+                  <MapPin className="size-3.5 shrink-0 text-[#4E4E4E]" aria-hidden />
+                  Context-aware
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
+                  <Heart className="size-3.5 shrink-0 text-[#4E4E4E]" aria-hidden />
+                  Vibe matching
+                </span>
+              </div>
+            </div>
+            <div className={mockupShell}>
               <div className="flex items-center justify-between bg-[#F5F3EC] px-4 py-3">
                 <div className="flex gap-1.5">
                   <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
@@ -518,39 +590,13 @@ function HowItWorksSection() {
                 </div>
               </div>
             </div>
-            <div className="min-w-0 order-1 md:order-2">
-              <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-[#2A2A2A] text-[14px] font-bold text-white">
-                02
-              </div>
-              <h3 className="mb-4 text-[36px] font-bold leading-[1.2] text-[#2A2A2A]">
-                Tell us where you&apos;re going
-              </h3>
-              <p className="mb-6 text-[18px] font-normal leading-[1.7] text-[#4E4E4E]">
-                Party? Work meeting? Dinner date? Festival? Just tap your event
-                and the AI takes it from there — no lengthy questionnaires, no
-                style quizzes.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
-                  <MapPin className="size-3.5 shrink-0 text-[#4E4E4E]" aria-hidden />
-                  Context-aware
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
-                  <Heart className="size-3.5 shrink-0 text-[#4E4E4E]" aria-hidden />
-                  Vibe matching
-                </span>
-              </div>
-            </div>
           </div>
         </motion.div>
 
         <StepConnector />
 
-        <motion.div
-          {...stepReveal}
-          className="border-t border-[#E3DDCF] py-[60px]"
-        >
-          <div className="grid grid-cols-1 items-center gap-10 md:grid-cols-2 md:gap-20">
+        <motion.div {...stepReveal} className="py-[60px]">
+          <div className={stepGrid}>
             <div className="min-w-0">
               <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-[#2A2A2A] text-[14px] font-bold text-white">
                 03
@@ -689,41 +735,9 @@ function HowItWorksSection() {
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-brand-bg text-text-primary">
-      <motion.header
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="sticky top-0 z-50 border-b border-[rgba(42,42,42,0.1)] bg-brand-bg"
-      >
-        <div
-          className={`relative mx-auto flex h-14 w-full max-w-[1280px] items-center justify-between ${sectionPx}`}
-        >
-          <img
-            src={STYLEMYLOOK_LOGO_URL}
-            alt="Style My Look"
-            className="relative z-10 h-8 w-auto shrink-0"
-          />
-          <p className="pointer-events-none absolute left-1/2 top-1/2 hidden max-w-[min(100%,28rem)] -translate-x-1/2 -translate-y-1/2 px-16 text-center text-base font-medium italic text-text-primary md:block">
-            ✨ Early access is open, limited spots left
-          </p>
-          <div className="relative z-10 flex shrink-0 items-center gap-2">
-            <span className="hidden text-base font-normal text-text-primary md:inline">
-              Stay updated. Follow us on
-            </span>
-            <a
-              href={INSTAGRAM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-text-primary"
-              aria-label="Instagram"
-            >
-              <InstagramGlyph className="h-5 w-5 shrink-0 text-text-primary" />
-            </a>
-          </div>
-        </div>
-      </motion.header>
+      <LandingHeader />
 
-      <main>
+      <main className="pt-14">
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -756,9 +770,9 @@ export default function HomePage() {
 
         <motion.section
           {...fadeUp}
-          className={`mx-auto mb-5 mt-10 max-w-[1280px] ${sectionPx}`}
+          className="mx-4 mb-5 mt-10 max-w-[1280px] md:mx-8 lg:mx-auto"
         >
-          <div className="flex min-h-0 w-full flex-col items-center justify-center rounded-[24px] bg-brand-surface p-8 text-center md:min-h-[680px] md:p-16">
+          <div className="flex min-h-0 w-full flex-col items-center justify-center rounded-3xl border border-[#E3DDCF] bg-[rgba(176,173,166,0.3)] p-8 text-center md:min-h-[680px] md:p-16">
             <h2 className="mb-6 text-[36px] font-bold leading-tight text-text-primary md:text-[52px] md:leading-[1.15]">
               Join now and get
               <br />
