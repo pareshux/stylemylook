@@ -13,6 +13,22 @@ import {
 const model =
   process.env.ANTHROPIC_MODEL || 'claude-opus-4-5-20251101'
 
+/** Strips whitespace and outer quotes — common causes of `invalid x-api-key`. */
+function normalizeAnthropicApiKey(raw: string | undefined): string | null {
+  if (raw == null || raw === '') return null
+  let k = raw.trim()
+  if (k.length >= 2) {
+    const q = k[0]
+    if (
+      (q === '"' && k.endsWith('"')) ||
+      (q === "'" && k.endsWith("'"))
+    ) {
+      k = k.slice(1, -1).trim()
+    }
+  }
+  return k.length > 0 ? k : null
+}
+
 const MAX_WARDROBE_ITEMS = 15
 const IMAGE_FETCH_TIMEOUT_MS = 20_000
 
@@ -121,7 +137,7 @@ function sanitizeOutfits(
 }
 
 export async function POST(request: Request) {
-  const apiKey = process.env.ANTHROPIC_API_KEY
+  const apiKey = normalizeAnthropicApiKey(process.env.ANTHROPIC_API_KEY)
   if (!apiKey) {
     console.error('ANTHROPIC_API_KEY is not set')
     return NextResponse.json(
@@ -260,11 +276,21 @@ Return ONLY valid JSON (no markdown):
     const block = msg.content.find((b) => b.type === 'text')
     textOut = block && block.type === 'text' ? block.text : ''
   } catch (error: any) {
+    const status = error?.status as number | undefined
     console.error('Anthropic API error:', {
       message: error?.message,
-      status: error?.status,
+      status,
       error: error?.error,
     })
+    if (status === 401) {
+      return NextResponse.json(
+        {
+          error:
+            'Anthropic API key is invalid or expired. Create a new key at console.anthropic.com and set ANTHROPIC_API_KEY (no extra spaces or quotes) in .env.local and in Vercel project env.',
+        },
+        { status: 401 }
+      )
+    }
     return NextResponse.json(
       { error: `AI request failed: ${error?.message ?? 'Unknown error'}` },
       { status: 500 }
