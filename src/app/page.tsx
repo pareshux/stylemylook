@@ -1,7 +1,12 @@
 'use client'
 
 import { LiveCounter } from '@/components/ui/LiveCounter'
-import { motion } from 'framer-motion'
+import {
+  motion,
+  useMotionValueEvent,
+  useScroll,
+  useTransform,
+} from 'framer-motion'
 import {
   Camera,
   Check,
@@ -12,7 +17,7 @@ import {
   Upload,
   Zap,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useRef, useState } from 'react'
 
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
@@ -315,419 +320,445 @@ function HeroVideo() {
   )
 }
 
-const stepReveal = {
-  initial: { opacity: 0, y: 40 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: '-80px' },
-  transition: { duration: 0.7, ease: 'easeOut' },
-} as const
-
 const mockupShell =
-  'overflow-hidden rounded-2xl border border-[#E3DDCF] bg-white shadow-sm'
+  'overflow-hidden rounded-2xl border border-[#E3DDCF] bg-white shadow-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-lg'
 
-function StepConnector() {
-  return <div className="mx-auto h-16 w-px bg-[#E3DDCF]" aria-hidden />
+type StickyStepProps = {
+  index: number
+  title: string
+  body: string
+  tags: React.ReactNode
+  mockup: React.ReactNode
 }
 
-const stepGrid =
-  'grid grid-cols-1 items-center gap-16 md:grid-cols-2 md:gap-24'
+function StickyStep({ index, title, body, tags, mockup }: StickyStepProps) {
+  const ref = useRef<HTMLDivElement | null>(null)
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ['start end', 'end start'],
+  })
 
-function LandingHeader() {
-  const [scrolled, setScrolled] = useState(false)
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20)
-    handleScroll()
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
+  const textY = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [40, 0, 0, -40])
+  const mockupY = useTransform(
+    scrollYProgress,
+    [0, 0.2, 0.8, 1],
+    [80, 0, 0, -40]
+  )
+  const scale = useTransform(
+    scrollYProgress,
+    [0, 0.2, 0.8, 1],
+    [0.94, 1, 1, 0.94]
+  )
 
   return (
-    <motion.header
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className={`fixed left-0 right-0 top-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? 'border-b border-[#E3DDCF] bg-[#F5F3EC]/95 shadow-sm backdrop-blur-md'
-          : 'border-b border-transparent bg-transparent'
-      }`}
-    >
-      <div
-        className={`relative mx-auto flex h-14 w-full max-w-[1280px] items-center justify-between ${sectionPx}`}
-      >
-        <img
-          src={STYLEMYLOOK_LOGO_URL}
-          alt="Style My Look"
-          className="relative z-10 h-8 w-auto shrink-0"
-        />
-        <p className="pointer-events-none absolute left-1/2 top-1/2 hidden max-w-[min(100%,28rem)] -translate-x-1/2 -translate-y-1/2 px-16 text-center text-base font-medium italic text-text-primary md:block">
-          ✨ Early access is open, limited spots left
-        </p>
-        <div className="relative z-10 flex shrink-0 items-center gap-2">
-          <span className="hidden text-base font-normal text-text-primary md:inline">
-            Stay updated. Follow us on
-          </span>
-          <a
-            href={INSTAGRAM_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-text-primary"
-            aria-label="Instagram"
-          >
-            <InstagramGlyph className="h-5 w-5 shrink-0 text-text-primary" />
-          </a>
-        </div>
+    <div ref={ref} className="relative flex min-h-screen items-center py-20">
+      <div className="mx-auto grid w-full max-w-[1280px] grid-cols-1 items-start gap-16 px-6 md:grid-cols-2 md:px-12">
+        <motion.div
+          style={{ opacity, y: textY }}
+          className="space-y-6 md:sticky md:top-32"
+        >
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#2A2A2A]">
+            <span className="text-sm font-bold text-white">
+              {String(index).padStart(2, '0')}
+            </span>
+          </div>
+          <h3 className="text-[32px] font-bold leading-[1.1] text-[#2A2A2A] md:text-[40px]">
+            {title}
+          </h3>
+          <p className="text-[18px] leading-[1.7] text-[#4E4E4E] md:text-[20px]">
+            {body}
+          </p>
+          <div className="flex flex-wrap gap-2">{tags}</div>
+        </motion.div>
+
+        <motion.div style={{ opacity, y: mockupY, scale }}>{mockup}</motion.div>
       </div>
-    </motion.header>
+    </div>
+  )
+}
+
+function HowItWorksProgressDots({
+  activeIndex,
+}: {
+  activeIndex: number
+}) {
+  return (
+    <div className="pointer-events-none fixed right-8 top-1/2 z-20 hidden -translate-y-1/2 flex-col items-center gap-3 md:flex">
+      {[0, 1, 2].map((i) => {
+        const active = i === activeIndex
+        return (
+          <div
+            key={i}
+            className={
+              active
+                ? 'h-6 w-2 rounded-full bg-[#2A2A2A] transition-all duration-300'
+                : 'h-2 w-2 rounded-full bg-[#E3DDCF] transition-all duration-300'
+            }
+          />
+        )
+      })}
+    </div>
   )
 }
 
 function HowItWorksSection() {
+  const sectionRef = useRef<HTMLElement | null>(null)
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start start', 'end end'],
+  })
+  const [activeIndex, setActiveIndex] = useState(0)
+
+  useMotionValueEvent(scrollYProgress, 'change', (value) => {
+    const clamped = Math.max(0, Math.min(1, value))
+    const index = Math.round(clamped * 2)
+    setActiveIndex(index)
+  })
+
+  const stepOneMockup = (
+    <div className={mockupShell}>
+      <div className="flex items-center justify-between bg-[#F5F3EC] px-4 py-3">
+        <div className="flex gap-1.5">
+          <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
+          <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
+          <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
+        </div>
+        <span className="text-[10px] font-bold tracking-widest text-[#8A8680]">
+          MY WARDROBE
+        </span>
+        <span className="text-[11px] text-[#8A8680]">14 items</span>
+      </div>
+      <div className="p-4">
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            { bg: '#2D3748', emoji: '🧥' },
+            { bg: '#F7F7F5', emoji: '👔', border: true },
+            { bg: '#D4956A', emoji: '👕' },
+            { bg: '#3B5998', emoji: '👖' },
+            { bg: '#D2B48C', emoji: '👟' },
+            { bg: '#1A1A1A', emoji: '👞' },
+          ].map((cell, i) => (
+            <motion.div
+              key={i}
+              className={`flex aspect-square cursor-pointer items-center justify-center rounded-xl text-2xl ${
+                cell.border ? 'border border-[#E3DDCF]' : ''
+              } hover:scale-110`}
+              style={{
+                backgroundColor: cell.bg,
+              }}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.35, delay: i * 0.06 }}
+            >
+              {cell.emoji}
+            </motion.div>
+          ))}
+        </div>
+        <div className="mt-3 flex items-center justify-center rounded-xl border-2 border-dashed border-[#E3DDCF] py-3 text-center">
+          <Upload className="size-4 text-[#8A8680]" aria-hidden />
+          <span className="ml-2 text-[12px] text-[#8A8680]">Add more photos</span>
+        </div>
+      </div>
+    </div>
+  )
+
+  const stepTwoMockup = (
+    <div className={mockupShell}>
+      <div className="flex items-center justify-between bg-[#F5F3EC] px-4 py-3">
+        <div className="flex gap-1.5">
+          <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
+          <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
+          <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
+        </div>
+        <span className="text-[10px] font-bold tracking-widest text-[#8A8680]">
+          WHERE TO?
+        </span>
+        <span className="w-8" aria-hidden />
+      </div>
+      <div className="space-y-2 p-4">
+        {[
+          {
+            emoji: '☕',
+            circle: 'bg-[#E8F2EB]',
+            title: 'Casual Day Out',
+            sub: 'Brunch, errands, coffee',
+            selected: false,
+          },
+          {
+            emoji: '💼',
+            circle: 'bg-[#F5E6D8]',
+            title: 'Work / Business',
+            sub: 'Office, meetings',
+            selected: true,
+          },
+          {
+            emoji: '🌙',
+            circle: 'bg-[#F7E8ED]',
+            title: 'Date Night',
+            sub: 'Dinner, drinks',
+            selected: false,
+          },
+          {
+            emoji: '✈️',
+            circle: 'bg-[#E5EFF7]',
+            title: 'Travel',
+            sub: 'Airport, vacation',
+            selected: false,
+          },
+        ].map((card) => (
+          <div
+            key={card.title}
+            className={`flex items-center gap-3 rounded-xl border p-3 ${
+              card.selected
+                ? 'border-[#2A2A2A] bg-[#F5F3EC] animate-selected-pulse'
+                : 'border-[#E3DDCF] bg-white hover:border-[#2A2A2A]/30 hover:bg-[#F5F3EC]'
+            } transition-colors`}
+          >
+            <div
+              className={`flex size-10 shrink-0 items-center justify-center rounded-full text-base ${card.circle}`}
+            >
+              {card.emoji}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[13px] font-semibold text-[#2A2A2A]">
+                {card.title}
+              </p>
+              <p className="text-[11px] text-[#8A8680]">{card.sub}</p>
+            </div>
+            {card.selected ? (
+              <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[#2A2A2A]">
+                <Check
+                  className="size-3.5 text-white"
+                  strokeWidth={3}
+                  aria-hidden
+                />
+              </div>
+            ) : (
+              <span className="size-6 shrink-0" aria-hidden />
+            )}
+          </div>
+        ))}
+        <div className="mt-3">
+          <p className="mb-2 text-[11px] text-[#8A8680]">Refine your vibe</p>
+          <div className="flex flex-wrap gap-2">
+            {['Smart Casual', 'Formal', 'Minimalist', 'Bold'].map((pill, i) => (
+              <span
+                key={pill}
+                className={`rounded-full border border-[#E3DDCF] px-3 py-1 text-[12px] ${
+                  i === 0
+                    ? 'bg-[#2A2A2A] text-white'
+                    : 'bg-white text-[#4E4E4E]'
+                }`}
+              >
+                {pill}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  const stepThreeMockup = (
+    <div className={mockupShell}>
+      <div className="flex items-center justify-between bg-[#F5F3EC] px-4 py-3">
+        <div className="flex gap-1.5">
+          <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
+          <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
+          <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
+        </div>
+        <span className="text-[10px] font-bold tracking-widest text-[#8A8680]">
+          YOUR OUTFITS
+        </span>
+        <span className="w-8" aria-hidden />
+      </div>
+      <div className="p-4">
+        <div className="mb-3 flex items-center gap-2 rounded-xl bg-[#F5F3EC] p-3">
+          <span className="text-sm text-amber-600" aria-hidden>
+            ✦
+          </span>
+          <div>
+            <p className="text-[12px] font-medium text-[#2A2A2A]">
+              Styled for Work / Business
+            </p>
+            <p className="text-[11px] text-[#8A8680]">
+              3 outfits from your wardrobe
+            </p>
+          </div>
+        </div>
+
+        <div className="relative overflow-hidden rounded-xl border border-[#E3DDCF]">
+          <span className="shimmer absolute left-2 top-2 z-10 rounded-full px-2 py-0.5 text-[9px] font-bold text-white">
+            TOP PICK
+          </span>
+          <div className="flex gap-1.5 bg-[#F8F6F3] p-3">
+            {[
+              { e: '🧥', bg: '#2D3748' },
+              { e: '👔', bg: '#F7F7F5' },
+              { e: '👖', bg: '#3B5998' },
+              { e: '👞', bg: '#1A1A1A' },
+            ].map((sq, i) => (
+              <div
+                key={i}
+                className="flex size-8 items-center justify-center rounded-lg text-base"
+                style={{ backgroundColor: sq.bg }}
+              >
+                {sq.e}
+              </div>
+            ))}
+          </div>
+          <div className="p-2">
+            <p className="text-[12px] font-semibold text-[#2A2A2A]">
+              Power Classic
+            </p>
+            <p className="text-[10px] text-green-600">● 96% match</p>
+          </div>
+        </div>
+
+        <div className="relative mt-2 overflow-hidden rounded-xl border border-[#E3DDCF]">
+          <div className="flex gap-1.5 bg-[#F8F6F3] p-3">
+            {[
+              { e: '👕', bg: '#D4956A' },
+              { e: '👖', bg: '#3B5998' },
+              { e: '👟', bg: '#D2B48C' },
+            ].map((sq, i) => (
+              <div
+                key={i}
+                className="flex size-8 items-center justify-center rounded-lg text-base"
+                style={{ backgroundColor: sq.bg }}
+              >
+                {sq.e}
+              </div>
+            ))}
+          </div>
+          <div className="p-2">
+            <p className="text-[12px] font-semibold text-[#2A2A2A]">
+              Warm &amp; Easy
+            </p>
+            <p className="text-[10px] text-amber-600">● 88% match</p>
+          </div>
+        </div>
+
+        <div className="relative mt-2 overflow-hidden rounded-xl border border-[#E3DDCF]">
+          <div className="flex items-center gap-1.5 bg-[#F8F6F3] p-2">
+            {[
+              { e: '👔', bg: '#F7F7F5' },
+              { e: '👖', bg: '#3B5998' },
+              { e: '👟', bg: '#D2B48C' },
+              { e: '⌚', bg: '#E3DDCF' },
+            ].map((sq, i) => (
+              <div
+                key={i}
+                className="flex size-7 items-center justify-center rounded-lg text-sm"
+                style={{ backgroundColor: sq.bg }}
+              >
+                {sq.e}
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center justify-between p-2">
+            <p className="text-[12px] font-semibold text-[#2A2A2A]">
+              Clean Minimal
+            </p>
+            <p className="text-[10px] text-[#4E4E4E]">● 84% match</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  const steps: StickyStepProps[] = [
+    {
+      index: 1,
+      title: 'Upload your wardrobe',
+      body:
+        'Snap or upload photos of everything you own — tops, bottoms, dresses, shoes, bags, accessories. Takes about 10 minutes once. AI reads each item automatically.',
+      tags: (
+        <>
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
+            <Camera className="size-3.5 shrink-0 text-[#4E4E4E]" aria-hidden />
+            Camera ready
+          </span>
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
+            <Zap className="size-3.5 shrink-0 text-[#4E4E4E]" aria-hidden />
+            Auto-tagged by AI
+          </span>
+        </>
+      ),
+      mockup: stepOneMockup,
+    },
+    {
+      index: 2,
+      title: "Tell us where you're going",
+      body:
+        'Party? Work meeting? Dinner date? Festival? Just tap your event and the AI takes it from there — no lengthy questionnaires, no style quizzes.',
+      tags: (
+        <>
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
+            <MapPin className="size-3.5 shrink-0 text-[#4E4E4E]" aria-hidden />
+            Context-aware
+          </span>
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
+            <Heart className="size-3.5 shrink-0 text-[#4E4E4E]" aria-hidden />
+            Vibe matching
+          </span>
+        </>
+      ),
+      mockup: stepTwoMockup,
+    },
+    {
+      index: 3,
+      title: 'Get 3 outfits instantly',
+      body:
+        'AI looks at your actual clothes, reads the occasion, and puts together 3 complete outfit combinations — with styling tips and accessories to complete the look.',
+      tags: (
+        <>
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
+            <Sparkles
+              className="size-3.5 shrink-0 text-[#4E4E4E]"
+              aria-hidden
+            />
+            AI-powered
+          </span>
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
+            <ShoppingBag
+              className="size-3.5 shrink-0 text-[#4E4E4E]"
+              aria-hidden
+            />
+            From your closet
+          </span>
+        </>
+      ),
+      mockup: stepThreeMockup,
+    },
+  ]
+
   return (
-    <section className="bg-[#F5F3EC] py-24 md:py-32">
+    <section ref={sectionRef} className="bg-[#F5F3EC] pt-12 pb-24 md:pt-16 md:pb-32">
       <div className="mx-auto max-w-[1280px] px-6 md:px-12">
-        <header className="mb-20 text-center">
+        <header className="mb-16 text-center md:mb-20">
           <p className="mb-4 text-[12px] font-bold uppercase tracking-[3px] text-[#8A8680]">
             HOW IT WORKS
           </p>
-          <h2 className="mb-4 text-[36px] font-bold leading-[1.15] text-[#2A2A2A] md:text-[52px]">
+          <h2 className="mb-4 text-[42px] font-bold leading-[1.1] text-[#2A2A2A] md:text-[64px]">
             From wardrobe to outfit in 3 steps
           </h2>
-          <p className="mx-auto max-w-lg text-center text-[18px] font-normal text-[#4E4E4E]">
+          <p className="mx-auto max-w-[580px] text-[18px] leading-[1.65] text-[#4E4E4E] md:text-[22px]">
             No stylist needed. No guesswork. Just AI that actually knows your
             clothes.
           </p>
         </header>
-
-        <motion.div {...stepReveal} className="py-[60px]">
-          <div className={stepGrid}>
-            <div className="min-w-0">
-              <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-[#2A2A2A] text-[14px] font-bold text-white">
-                01
-              </div>
-              <h3 className="mb-4 text-[36px] font-bold leading-[1.2] text-[#2A2A2A]">
-                Upload your wardrobe
-              </h3>
-              <p className="mb-6 text-[18px] font-normal leading-[1.7] text-[#4E4E4E]">
-                Snap or upload photos of everything you own — tops, bottoms,
-                dresses, shoes, bags, accessories. Takes about 10 minutes
-                once. AI reads each item automatically.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
-                  <Camera className="size-3.5 shrink-0 text-[#4E4E4E]" aria-hidden />
-                  Camera ready
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
-                  <Zap className="size-3.5 shrink-0 text-[#4E4E4E]" aria-hidden />
-                  Auto-tagged by AI
-                </span>
-              </div>
-            </div>
-            <div className={mockupShell}>
-              <div className="flex items-center justify-between bg-[#F5F3EC] px-4 py-3">
-                <div className="flex gap-1.5">
-                  <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
-                  <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
-                  <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
-                </div>
-                <span className="text-[10px] font-bold tracking-widest text-[#8A8680]">
-                  MY WARDROBE
-                </span>
-                <span className="text-[11px] text-[#8A8680]">14 items</span>
-              </div>
-              <div className="p-4">
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { bg: '#2D3748', emoji: '🧥' },
-                    { bg: '#F7F7F5', emoji: '👔', border: true },
-                    { bg: '#D4956A', emoji: '👕' },
-                    { bg: '#3B5998', emoji: '👖' },
-                    { bg: '#D2B48C', emoji: '👟' },
-                    { bg: '#1A1A1A', emoji: '👞' },
-                  ].map((cell, i) => (
-                    <div
-                      key={i}
-                      className={`flex aspect-square items-center justify-center rounded-xl text-2xl ${
-                        cell.border ? 'border border-[#E3DDCF]' : ''
-                      }`}
-                      style={{ backgroundColor: cell.bg }}
-                    >
-                      {cell.emoji}
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-3 flex items-center justify-center rounded-xl border-2 border-dashed border-[#E3DDCF] py-3 text-center">
-                  <Upload className="size-4 text-[#8A8680]" aria-hidden />
-                  <span className="ml-2 text-[12px] text-[#8A8680]">
-                    Add more photos
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        <StepConnector />
-
-        <motion.div {...stepReveal} className="py-[60px]">
-          <div className={stepGrid}>
-            <div className="min-w-0">
-              <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-[#2A2A2A] text-[14px] font-bold text-white">
-                02
-              </div>
-              <h3 className="mb-4 text-[36px] font-bold leading-[1.2] text-[#2A2A2A]">
-                Tell us where you&apos;re going
-              </h3>
-              <p className="mb-6 text-[18px] font-normal leading-[1.7] text-[#4E4E4E]">
-                Party? Work meeting? Dinner date? Festival? Just tap your event
-                and the AI takes it from there — no lengthy questionnaires, no
-                style quizzes.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
-                  <MapPin className="size-3.5 shrink-0 text-[#4E4E4E]" aria-hidden />
-                  Context-aware
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
-                  <Heart className="size-3.5 shrink-0 text-[#4E4E4E]" aria-hidden />
-                  Vibe matching
-                </span>
-              </div>
-            </div>
-            <div className={mockupShell}>
-              <div className="flex items-center justify-between bg-[#F5F3EC] px-4 py-3">
-                <div className="flex gap-1.5">
-                  <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
-                  <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
-                  <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
-                </div>
-                <span className="text-[10px] font-bold tracking-widest text-[#8A8680]">
-                  WHERE TO?
-                </span>
-                <span className="w-8" aria-hidden />
-              </div>
-              <div className="space-y-2 p-4">
-                {[
-                  {
-                    emoji: '☕',
-                    circle: 'bg-[#E8F2EB]',
-                    title: 'Casual Day Out',
-                    sub: 'Brunch, errands, coffee',
-                    selected: false,
-                  },
-                  {
-                    emoji: '💼',
-                    circle: 'bg-[#F5E6D8]',
-                    title: 'Work / Business',
-                    sub: 'Office, meetings',
-                    selected: true,
-                  },
-                  {
-                    emoji: '🌙',
-                    circle: 'bg-[#F7E8ED]',
-                    title: 'Date Night',
-                    sub: 'Dinner, drinks',
-                    selected: false,
-                  },
-                  {
-                    emoji: '✈️',
-                    circle: 'bg-[#E5EFF7]',
-                    title: 'Travel',
-                    sub: 'Airport, vacation',
-                    selected: false,
-                  },
-                ].map((card) => (
-                  <div
-                    key={card.title}
-                    className={`flex items-center gap-3 rounded-xl border p-3 ${
-                      card.selected
-                        ? 'border-[#2A2A2A] bg-[#F5F3EC]'
-                        : 'border-[#E3DDCF] bg-white'
-                    }`}
-                  >
-                    <div
-                      className={`flex size-10 shrink-0 items-center justify-center rounded-full text-base ${card.circle}`}
-                    >
-                      {card.emoji}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[13px] font-semibold text-[#2A2A2A]">
-                        {card.title}
-                      </p>
-                      <p className="text-[11px] text-[#8A8680]">{card.sub}</p>
-                    </div>
-                    {card.selected ? (
-                      <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[#2A2A2A]">
-                        <Check className="size-3.5 text-white" strokeWidth={3} aria-hidden />
-                      </div>
-                    ) : (
-                      <span className="size-6 shrink-0" aria-hidden />
-                    )}
-                  </div>
-                ))}
-                <div className="mt-3">
-                  <p className="mb-2 text-[11px] text-[#8A8680]">
-                    Refine your vibe
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {['Smart Casual', 'Formal', 'Minimalist', 'Bold'].map(
-                      (pill, i) => (
-                        <span
-                          key={pill}
-                          className={`rounded-full border border-[#E3DDCF] px-3 py-1 text-[12px] ${
-                            i === 0
-                              ? 'bg-[#2A2A2A] text-white'
-                              : 'bg-white text-[#4E4E4E]'
-                          }`}
-                        >
-                          {pill}
-                        </span>
-                      )
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        <StepConnector />
-
-        <motion.div {...stepReveal} className="py-[60px]">
-          <div className={stepGrid}>
-            <div className="min-w-0">
-              <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-[#2A2A2A] text-[14px] font-bold text-white">
-                03
-              </div>
-              <h3 className="mb-4 text-[36px] font-bold leading-[1.2] text-[#2A2A2A]">
-                Get 3 outfits instantly
-              </h3>
-              <p className="mb-6 text-[18px] font-normal leading-[1.7] text-[#4E4E4E]">
-                AI looks at your actual clothes, reads the occasion, and puts
-                together 3 complete outfit combinations — with styling tips and
-                accessories to complete the look.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
-                  <Sparkles className="size-3.5 shrink-0 text-[#4E4E4E]" aria-hidden />
-                  AI-powered
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
-                  <ShoppingBag className="size-3.5 shrink-0 text-[#4E4E4E]" aria-hidden />
-                  From your closet
-                </span>
-              </div>
-            </div>
-            <div className={mockupShell}>
-              <div className="flex items-center justify-between bg-[#F5F3EC] px-4 py-3">
-                <div className="flex gap-1.5">
-                  <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
-                  <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
-                  <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
-                </div>
-                <span className="text-[10px] font-bold tracking-widest text-[#8A8680]">
-                  YOUR OUTFITS
-                </span>
-                <span className="w-8" aria-hidden />
-              </div>
-              <div className="p-4">
-                <div className="mb-3 flex items-center gap-2 rounded-xl bg-[#F5F3EC] p-3">
-                  <span className="text-sm text-amber-600" aria-hidden>
-                    ✦
-                  </span>
-                  <div>
-                    <p className="text-[12px] font-medium text-[#2A2A2A]">
-                      Styled for Work / Business
-                    </p>
-                    <p className="text-[11px] text-[#8A8680]">
-                      3 outfits from your wardrobe
-                    </p>
-                  </div>
-                </div>
-
-                <div className="relative overflow-hidden rounded-xl border border-[#E3DDCF]">
-                  <span className="absolute left-2 top-2 z-10 rounded-full bg-[#2A2A2A] px-2 py-0.5 text-[9px] font-bold text-white">
-                    TOP PICK
-                  </span>
-                  <div className="flex gap-1.5 bg-[#F8F6F3] p-3">
-                    {[
-                      { e: '🧥', bg: '#2D3748' },
-                      { e: '👔', bg: '#F7F7F5' },
-                      { e: '👖', bg: '#3B5998' },
-                      { e: '👞', bg: '#1A1A1A' },
-                    ].map((sq, i) => (
-                      <div
-                        key={i}
-                        className="flex size-8 items-center justify-center rounded-lg text-base"
-                        style={{ backgroundColor: sq.bg }}
-                      >
-                        {sq.e}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="p-2">
-                    <p className="text-[12px] font-semibold text-[#2A2A2A]">
-                      Power Classic
-                    </p>
-                    <p className="text-[10px] text-green-600">● 96% match</p>
-                  </div>
-                </div>
-
-                <div className="relative mt-2 overflow-hidden rounded-xl border border-[#E3DDCF]">
-                  <div className="flex gap-1.5 bg-[#F8F6F3] p-3">
-                    {[
-                      { e: '👕', bg: '#D4956A' },
-                      { e: '👖', bg: '#3B5998' },
-                      { e: '👟', bg: '#D2B48C' },
-                    ].map((sq, i) => (
-                      <div
-                        key={i}
-                        className="flex size-8 items-center justify-center rounded-lg text-base"
-                        style={{ backgroundColor: sq.bg }}
-                      >
-                        {sq.e}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="p-2">
-                    <p className="text-[12px] font-semibold text-[#2A2A2A]">
-                      Warm &amp; Easy
-                    </p>
-                    <p className="text-[10px] text-amber-600">● 88% match</p>
-                  </div>
-                </div>
-
-                <div className="relative mt-2 overflow-hidden rounded-xl border border-[#E3DDCF]">
-                  <div className="flex items-center gap-1.5 bg-[#F8F6F3] p-2">
-                    {[
-                      { e: '👔', bg: '#F7F7F5' },
-                      { e: '👖', bg: '#3B5998' },
-                      { e: '👟', bg: '#D2B48C' },
-                      { e: '⌚', bg: '#E3DDCF' },
-                    ].map((sq, i) => (
-                      <div
-                        key={i}
-                        className="flex size-7 items-center justify-center rounded-lg text-sm"
-                        style={{ backgroundColor: sq.bg }}
-                      >
-                        {sq.e}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-between p-2">
-                    <p className="text-[12px] font-semibold text-[#2A2A2A]">
-                      Clean Minimal
-                    </p>
-                    <p className="text-[10px] text-[#4E4E4E]">● 84% match</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
       </div>
+
+      <div>
+        {steps.map((step) => (
+          <StickyStep key={step.index} {...step} />
+        ))}
+      </div>
+
+      <HowItWorksProgressDots activeIndex={activeIndex} />
     </section>
   )
 }
@@ -735,9 +766,41 @@ function HowItWorksSection() {
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-brand-bg text-text-primary">
-      <LandingHeader />
+      <motion.header
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="sticky top-0 z-50 border-b border-[rgba(42,42,42,0.1)] bg-brand-bg"
+      >
+        <div
+          className={`relative mx-auto flex h-14 w-full max-w-[1280px] items-center justify-between ${sectionPx}`}
+        >
+          <img
+            src={STYLEMYLOOK_LOGO_URL}
+            alt="Style My Look"
+            className="relative z-10 h-8 w-auto shrink-0"
+          />
+          <p className="pointer-events-none absolute left-1/2 top-1/2 hidden max-w-[min(100%,28rem)] -translate-x-1/2 -translate-y-1/2 px-16 text-center text-base font-medium italic text-text-primary md:block">
+            ✨ Early access is open, limited spots left
+          </p>
+          <div className="relative z-10 flex shrink-0 items-center gap-2">
+            <span className="hidden text-base font-normal text-text-primary md:inline">
+              Stay updated. Follow us on
+            </span>
+            <a
+              href={INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-text-primary"
+              aria-label="Instagram"
+            >
+              <InstagramGlyph className="h-5 w-5 shrink-0 text-text-primary" />
+            </a>
+          </div>
+        </div>
+      </motion.header>
 
-      <main className="pt-14">
+      <main>
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -770,9 +833,9 @@ export default function HomePage() {
 
         <motion.section
           {...fadeUp}
-          className="mx-4 mb-5 mt-10 max-w-[1280px] md:mx-8 lg:mx-auto"
+          className={`mx-auto mb-8 mt-8 max-w-[1280px] ${sectionPx}`}
         >
-          <div className="flex min-h-0 w-full flex-col items-center justify-center rounded-3xl border border-[#E3DDCF] bg-[rgba(176,173,166,0.3)] p-8 text-center md:min-h-[680px] md:p-16">
+          <div className="flex min-h-0 w-full flex-col items-center justify-center rounded-[24px] bg-brand-surface p-8 text-center md:min-h-[680px] md:p-16">
             <h2 className="mb-6 text-[36px] font-bold leading-tight text-text-primary md:text-[52px] md:leading-[1.15]">
               Join now and get
               <br />
