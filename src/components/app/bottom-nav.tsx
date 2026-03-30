@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Heart, Shirt, User, type LucideIcon } from 'lucide-react'
+import { Bookmark, Shirt, User, type LucideIcon } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
@@ -12,7 +12,7 @@ const tabs: ReadonlyArray<
 > = [
   { href: '/home', label: 'Home', logo: true },
   { href: '/wardrobe', label: 'Wardrobe', logo: false, Icon: Shirt },
-  { href: '/saved', label: 'Saved', logo: false, Icon: Heart },
+  { href: '/saved', label: 'Fav Looks', logo: false, Icon: Bookmark },
   { href: '/profile', label: 'Profile', logo: false, Icon: User },
 ]
 

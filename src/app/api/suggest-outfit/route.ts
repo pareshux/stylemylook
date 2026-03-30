@@ -253,8 +253,9 @@ Create up to 3 outfit suggestions using ONLY the items shown in the images above
 Rules:
 - Only reference items you can actually see in the images
 - Describe each piece accurately based on what you see (color, style, garment type)
-- Each outfit needs 2–4 items that work together; if only 2–3 items fit the event, use that many — do not invent extra pieces
-- Use fewer items when appropriate; the JSON "items" array length should match how many garments are in the outfit (2, 3, or 4)
+- Each outfit should ideally use 3–4 items that work together (tops, bottoms, layers, shoes, bags, accessories). If only 2 items truly fit the event, you may return 2, but prefer 3–4 when possible — do not invent extra pieces.
+- Whenever possible, include shoes and accessories from the wardrobe items when they visually match the outfit.
+- The JSON "items" array length must match how many garments are in the outfit (2, 3, or 4)
 - Make suggestions genuinely appropriate for the event
 
 Return ONLY valid JSON (no markdown):

@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { RefreshCw, ShoppingBag } from 'lucide-react'
+import { ExternalLink, RefreshCw, ShoppingBag } from 'lucide-react'
 
 import { AILoadingState } from '@/components/app/ai-loading-state'
 import { createClient } from '@/lib/supabase/client'
@@ -20,40 +20,58 @@ type WardrobeRow = {
   user_notes: string | null
 }
 
-function photoGridClass(count: number) {
-  if (count <= 1) return 'grid grid-cols-1 gap-2'
-  if (count === 2) return 'grid grid-cols-2 gap-2'
-  if (count === 3) return 'grid grid-cols-3 gap-2'
-  return 'grid grid-cols-2 gap-2'
-}
-
 function AccessoriesBlock({ accessories }: { accessories: string[] }) {
+  const [showAll, setShowAll] = useState(false)
   if (!accessories.length) return null
-  const href = `https://www.google.com/search?q=${encodeURIComponent(accessories.join(' OR '))}&tbm=shop`
+
+  const visibleAccessories = showAll ? accessories : accessories.slice(0, 2)
+  const remaining = accessories.length - visibleAccessories.length
+
   return (
     <div className="mt-3">
       <p className="mb-2 text-[12px] font-medium uppercase tracking-wider text-[#8A8680]">
         Complete the look
       </p>
-      <div className="flex flex-wrap gap-2">
-        {accessories.map((a) => (
-          <span
-            key={a}
-            className="rounded-full border border-[#E3DDCF] bg-[#F5F3EC] px-3 py-1 text-[13px] text-[#4E4E4E]"
+      <div className="space-y-2">
+        {visibleAccessories.map((accessory, i) => (
+          <a
+            key={`${accessory}-${i}`}
+            href={`https://www.google.com/search?q=${encodeURIComponent(
+              accessory
+            )}&tbm=shop`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 rounded-xl border border-[#E3DDCF] bg-[#F5F3EC] p-3 transition-all hover:border-[#2A2A2A] hover:bg-[#E3DDCF] group"
           >
-            {a}
-          </span>
+            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-[#E3DDCF] transition-colors group-hover:bg-[#D5CEBC]">
+              <ShoppingBag className="h-5 w-5 text-[#8A8680]" aria-hidden />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[13px] font-medium capitalize text-[#2A2A2A]">
+                {accessory}
+              </p>
+              <p className="mt-0.5 text-[11px] text-[#8A8680]">
+                Shop on Google →
+              </p>
+            </div>
+            <ExternalLink
+              className="h-3.5 w-3.5 flex-shrink-0 text-[#8A8680] transition-colors group-hover:text-[#2A2A2A]"
+              aria-hidden
+            />
+          </a>
         ))}
       </div>
-      <a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-3 inline-flex items-center gap-1.5 text-[13px] text-[#4E4E4E] transition-colors hover:underline"
-      >
-        <ShoppingBag className="size-[13px] shrink-0" strokeWidth={2} aria-hidden />
-        Find these on Google Shopping →
-      </a>
+      {remaining > 0 ? (
+        <button
+          type="button"
+          onClick={() => setShowAll((prev) => !prev)}
+          className="mt-2 text-[13px] text-[#4E4E4E] underline"
+        >
+          {showAll
+            ? 'Show less'
+            : `Show ${remaining} more accessor${remaining === 1 ? 'y' : 'ies'}`}
+        </button>
+      ) : null}
     </div>
   )
 }
@@ -321,7 +339,7 @@ export function SuggestionsContent() {
               const visibleIds = o.items.filter((id) => itemById[id])
               const saveKey = o.name + o.items.join(',')
               const isSaved = savedKeys.includes(saveKey)
-              const gridClass = photoGridClass(visibleIds.length)
+              const items = visibleIds.map((id) => itemById[id]!)
               return (
                 <motion.article
                   key={`${o.name}-${idx}`}
@@ -333,27 +351,84 @@ export function SuggestionsContent() {
                   <h2 className="mb-3 text-[20px] font-semibold text-[#2A2A2A]">
                     {o.name}
                   </h2>
-                  {visibleIds.length > 0 ? (
-                    <div className={cn(gridClass, 'overflow-hidden rounded-xl')}>
-                      {visibleIds.map((id) => {
-                        const item = itemById[id]!
-                        return (
+                  {items.length === 1 && (
+                    <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-[#E3DDCF]">
+                      <Image
+                        src={items[0].image_url}
+                        alt={items[0].user_notes || ''}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 80vw, 60vw"
+                      />
+                    </div>
+                  )}
+                  {items.length === 2 && (
+                    <div className="grid grid-cols-2 gap-2">
+                      {items.map((item) => (
+                        <div
+                          key={item.id}
+                          className="relative aspect-square overflow-hidden rounded-xl bg-[#E3DDCF]"
+                        >
+                          <Image
+                            src={item.image_url}
+                            alt={item.user_notes || ''}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 40vw, 30vw"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {items.length === 3 && (
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="col-span-2">
+                        <div className="relative aspect-square overflow-hidden rounded-xl bg-[#E3DDCF]">
+                          <Image
+                            src={items[0].image_url}
+                            alt={items[0].user_notes || ''}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 66vw, (max-width: 1024px) 60vw, 40vw"
+                          />
+                        </div>
+                      </div>
+                      <div className="col-span-1 flex flex-col gap-2">
+                        {items.slice(1).map((item) => (
                           <div
-                            key={id}
-                            className="relative aspect-square overflow-hidden rounded-xl bg-[#E3DDCF]"
+                            key={item.id}
+                            className="relative flex-1 overflow-hidden rounded-xl bg-[#E3DDCF]"
                           >
                             <Image
                               src={item.image_url}
                               alt={item.user_notes || ''}
                               fill
                               className="object-cover"
-                              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                              sizes="(max-width: 768px) 33vw, (max-width: 1024px) 30vw, 20vw"
                             />
                           </div>
-                        )
-                      })}
+                        ))}
+                      </div>
                     </div>
-                  ) : null}
+                  )}
+                  {items.length >= 4 && (
+                    <div className="grid grid-cols-2 gap-2">
+                      {items.slice(0, 4).map((item) => (
+                        <div
+                          key={item.id}
+                          className="relative aspect-square overflow-hidden rounded-xl bg-[#E3DDCF]"
+                        >
+                          <Image
+                            src={item.image_url}
+                            alt={item.user_notes || ''}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 40vw, 30vw"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <p className="mt-3 text-[14px] leading-[1.6] text-[#4E4E4E]">
                     {o.styling_tip}
                   </p>
