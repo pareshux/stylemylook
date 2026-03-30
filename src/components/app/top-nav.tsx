@@ -28,7 +28,7 @@ export function TopNav({ showUpgradeNudge = false }: { showUpgradeNudge?: boolea
       <div className="mx-auto flex h-full max-w-[1280px] items-center justify-between px-8">
         <Link href="/home" className="shrink-0">
           <img
-            src="/logo.svg"
+            src="https://eqwqddsgvxrpksvptlmx.supabase.co/storage/v1/object/public/assets/stylemylook_logo.svg"
             alt="StyleMyLook"
             className="h-8 w-auto"
           />

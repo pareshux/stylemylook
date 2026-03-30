@@ -45,7 +45,7 @@ export function BottomNav({ showUpgradeNudge = false }: { showUpgradeNudge?: boo
             >
               {NavIcon == null ? (
                 <img
-                  src="/logo.svg"
+                  src="https://eqwqddsgvxrpksvptlmx.supabase.co/storage/v1/object/public/assets/stylemylook_logo.svg"
                   alt="StyleMyLook"
                   className={cn(
                     'h-6 w-auto',
