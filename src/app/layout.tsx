@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import { Analytics } from '@vercel/analytics/next'
 import { Instrument_Sans } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
 
 import './globals.css'
 
