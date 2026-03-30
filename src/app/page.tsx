@@ -1,5 +1,6 @@
 'use client'
 
+import React, { useRef, useState } from 'react'
 import { LiveCounter } from '@/components/ui/LiveCounter'
 import {
   motion,
@@ -17,7 +18,6 @@ import {
   Upload,
   Zap,
 } from 'lucide-react'
-import { useRef, useState } from 'react'
 
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
@@ -742,10 +742,12 @@ function HowItWorksSection() {
           <p className="mb-4 text-[12px] font-bold uppercase tracking-[3px] text-[#8A8680]">
             HOW IT WORKS
           </p>
-          <h2 className="mb-4 text-[42px] font-bold leading-[1.1] text-[#2A2A2A] md:text-[64px]">
-            From wardrobe to outfit in 3 steps
+          <h2 className="mx-auto mb-4 max-w-[520px] text-[42px] font-bold leading-[1.1] text-[#2A2A2A] md:text-[64px]">
+            From wardrobe to outfit
+            <br />
+            in 3 steps
           </h2>
-          <p className="mx-auto max-w-[580px] text-[18px] leading-[1.65] text-[#4E4E4E] md:text-[22px]">
+          <p className="mx-auto max-w-3xl text-[18px] leading-[1.65] text-[#4E4E4E] md:text-[20px] md:whitespace-nowrap">
             No stylist needed. No guesswork. Just AI that actually knows your
             clothes.
           </p>
@@ -764,13 +766,32 @@ function HowItWorksSection() {
 }
 
 export default function HomePage() {
+  const [scrolled, setScrolled] = useState(false)
+
+  React.useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > 10)
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+    }
+  }, [])
+
   return (
     <div className="min-h-screen bg-brand-bg text-text-primary">
       <motion.header
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="sticky top-0 z-50 border-b border-[rgba(42,42,42,0.1)] bg-brand-bg"
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          scrolled
+            ? 'border-b border-[#E3DDCF] bg-white shadow-sm'
+            : 'border-b border-transparent bg-transparent'
+        }`}
       >
         <div
           className={`relative mx-auto flex h-14 w-full max-w-[1280px] items-center justify-between ${sectionPx}`}
@@ -800,7 +821,7 @@ export default function HomePage() {
         </div>
       </motion.header>
 
-      <main>
+      <main className="pt-14">
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -833,9 +854,12 @@ export default function HomePage() {
 
         <motion.section
           {...fadeUp}
-          className={`mx-auto mb-8 mt-8 max-w-[1280px] ${sectionPx}`}
+          className="mx-auto mb-8 mt-8 w-full max-w-[1280px]"
         >
-          <div className="flex min-h-0 w-full flex-col items-center justify-center rounded-[24px] bg-brand-surface p-8 text-center md:min-h-[680px] md:p-16">
+          <section
+            style={{ backgroundColor: 'rgba(176, 173, 166, 0.3)' }}
+            className="mx-4 flex min-h-0 flex-col items-center justify-center rounded-3xl border border-[#E3DDCF] px-6 py-16 text-center md:mx-8 md:min-h-[680px] md:px-12 md:py-20"
+          >
             <h2 className="mb-6 text-[36px] font-bold leading-tight text-text-primary md:text-[52px] md:leading-[1.15]">
               Join now and get
               <br />
@@ -847,7 +871,7 @@ export default function HomePage() {
               first-mover love.
             </p>
             <CtaWaitlistForm />
-          </div>
+          </section>
         </motion.section>
       </main>
 
