@@ -10,8 +10,8 @@ import {
   suggestOutfitResponseSchema,
 } from '@/lib/outfit-schema'
 
-const MODEL =
-  process.env.ANTHROPIC_MODEL ?? 'claude-opus-4-5-20251101'
+const model =
+  process.env.ANTHROPIC_MODEL || 'claude-opus-4-5-20251101'
 
 const MAX_WARDROBE_ITEMS = 15
 const IMAGE_FETCH_TIMEOUT_MS = 20_000
@@ -121,12 +121,18 @@ function sanitizeOutfits(
 }
 
 export async function POST(request: Request) {
-  if (!process.env.ANTHROPIC_API_KEY) {
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    console.error('ANTHROPIC_API_KEY is not set')
     return NextResponse.json(
-      { error: 'ANTHROPIC_API_KEY is not configured.' },
-      { status: 503 }
+      { error: 'API key not configured' },
+      { status: 500 }
     )
   }
+
+  const client = new Anthropic({
+    apiKey,
+  })
 
   let body: { eventType?: string }
   try {
@@ -200,9 +206,9 @@ export async function POST(request: Request) {
     )
   }
 
-  if (!items?.length) {
+  if (!items || items.length === 0) {
     return NextResponse.json(
-      { error: 'No wardrobe items', code: 'EMPTY_WARDROBE' },
+      { error: 'No wardrobe items found' },
       { status: 400 }
     )
   }
@@ -244,22 +250,24 @@ Return ONLY valid JSON (no markdown):
     },
   ]
 
-  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-
   let textOut = ''
   try {
-    const msg = await anthropic.messages.create({
-      model: MODEL,
+    const msg = await client.messages.create({
+      model,
       max_tokens: 8192,
       messages: [{ role: 'user', content }],
     })
     const block = msg.content.find((b) => b.type === 'text')
     textOut = block && block.type === 'text' ? block.text : ''
-  } catch (e) {
-    console.error(e)
+  } catch (error: any) {
+    console.error('Anthropic API error:', {
+      message: error?.message,
+      status: error?.status,
+      error: error?.error,
+    })
     return NextResponse.json(
-      { error: 'AI request failed. Check model name and API key.' },
-      { status: 502 }
+      { error: `AI request failed: ${error?.message ?? 'Unknown error'}` },
+      { status: 500 }
     )
   }
 
