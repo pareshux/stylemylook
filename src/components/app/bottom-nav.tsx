@@ -16,7 +16,7 @@ const tabs: ReadonlyArray<
   { href: '/profile', label: 'Profile', logo: false, Icon: User },
 ]
 
-export function BottomNav() {
+export function BottomNav({ showUpgradeNudge = false }: { showUpgradeNudge?: boolean }) {
   const pathname = usePathname()
 
   return (
@@ -46,18 +46,23 @@ export function BottomNav() {
               {NavIcon == null ? (
                 <img
                   src="/logo.svg"
-                  alt=""
+                  alt="StyleMyLook"
                   className={cn(
-                    'h-7 w-auto',
+                    'h-6 w-auto',
                     active ? 'opacity-100' : 'opacity-55'
                   )}
                   aria-hidden
                 />
               ) : (
-                <NavIcon
-                  className="size-6 shrink-0 stroke-[1.75]"
-                  aria-hidden
-                />
+                <div className="relative flex items-center justify-center">
+                  <NavIcon
+                    className="size-6 shrink-0 stroke-[1.75]"
+                    aria-hidden
+                  />
+                  {tab.href === '/profile' && showUpgradeNudge ? (
+                    <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-red-500" />
+                  ) : null}
+                </div>
               )}
               {label}
             </Link>

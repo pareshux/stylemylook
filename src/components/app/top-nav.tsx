@@ -17,7 +17,7 @@ function linkActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
-export function TopNav() {
+export function TopNav({ showUpgradeNudge = false }: { showUpgradeNudge?: boolean }) {
   const pathname = usePathname()
 
   return (
@@ -33,25 +33,36 @@ export function TopNav() {
             className="h-8 w-auto"
           />
         </Link>
-        <nav className="flex h-full items-stretch gap-8" aria-label="Main navigation">
-          {links.map(({ href, label }) => {
-            const active = linkActive(pathname, href)
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={cn(
-                  'flex items-center border-b-2 text-[15px] font-medium text-[#4E4E4E] transition-colors hover:text-[#2A2A2A]',
-                  active
-                    ? 'border-[#2A2A2A] font-semibold text-[#2A2A2A]'
-                    : 'border-transparent'
-                )}
-              >
-                {label}
-              </Link>
-            )
-          })}
-        </nav>
+        <div className="flex items-center gap-6">
+          <nav className="flex h-full items-stretch gap-8" aria-label="Main navigation">
+            {links.map(({ href, label }) => {
+              const active = linkActive(pathname, href)
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={cn(
+                    'flex items-center border-b-2 text-[15px] font-medium text-[#4E4E4E] transition-colors hover:text-[#2A2A2A]',
+                    active
+                      ? 'border-[#2A2A2A] font-semibold text-[#2A2A2A]'
+                      : 'border-transparent'
+                  )}
+                >
+                  {label}
+                </Link>
+              )
+            })}
+          </nav>
+          {showUpgradeNudge ? (
+            <Link
+              href="/pricing"
+              className="rounded-full bg-[#2A2A2A] px-4 py-1.5 text-[13px] font-medium text-white"
+              style={{ animation: 'pulse 2s ease-in-out infinite' }}
+            >
+              Upgrade ✨
+            </Link>
+          ) : null}
+        </div>
       </div>
     </header>
   )

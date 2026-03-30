@@ -108,3 +108,15 @@ p {
   animation: marquee 8s linear infinite;
   width: max-content;
 }
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 0.9;
+  }
+}
