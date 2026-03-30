@@ -4,12 +4,12 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
+import { Camera, ImagePlus, Loader2, X } from 'lucide-react'
 
 import { createClient } from '@/lib/supabase/client'
 import { WARDROBE_BUCKET } from '@/lib/storage'
 import { Button } from '@/components/button'
 import { Input } from '@/components/ui/input'
-import { AppMaxWidth } from '@/components/app/app-max-width'
 
 type Row = {
   key: string
@@ -56,6 +56,8 @@ export function WardrobeUploadForm({
 
   const [limitModalOpen, setLimitModalOpen] = useState(false)
   const [limitChecking, setLimitChecking] = useState(false)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
+  const galleryInputRef = useRef<HTMLInputElement>(null)
 
   const ensureProfileRow = useCallback(
     async (userId: string) => {
@@ -238,6 +240,13 @@ export function WardrobeUploadForm({
     }
   }, [])
 
+  function removeQueuedRow(rowKey: string) {
+    const row = rowsRef.current.find((r) => r.key === rowKey)
+    if (!row) return
+    URL.revokeObjectURL(row.preview)
+    setRows((prev) => prev.filter((r) => r.key !== rowKey))
+  }
+
   async function updateLabel(rowKey: string, label: string, itemId?: string) {
     setRows((prev) =>
       prev.map((r) => (r.key === rowKey ? { ...r, label } : r))
@@ -249,20 +258,26 @@ export function WardrobeUploadForm({
       .eq('id', itemId)
   }
 
+  const totalCount = rows.length
+  const uploadingCount = rows.filter((r) => r.status === 'uploading').length
+  const finishedCount = totalCount - uploadingCount
+  const progressPct =
+    totalCount > 0 ? Math.round((finishedCount / totalCount) * 100) : 0
+
   return (
-    <div className="pb-28">
-      <AppMaxWidth className="space-y-6 pt-6">
+    <div className="min-h-screen bg-brand-bg pb-28">
+      <div className="mx-auto w-full max-w-[1280px] px-6 py-10 md:px-12 md:py-14">
         {heading ? (
           <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
-            <h1 className="text-2xl font-bold tracking-tight text-[#1C1C1C]">
+            <h1 className="mb-3 text-center text-[36px] font-bold leading-[1.2] text-text-primary md:text-[48px]">
               {heading}
             </h1>
             {subtext ? (
-              <p className="mt-2 text-sm leading-relaxed text-[#1C1C1C]/60">
+              <p className="mx-auto mb-12 max-w-4xl text-center text-[20px] font-normal leading-[1.45] text-text-secondary">
                 {subtext}
               </p>
             ) : null}
@@ -280,55 +295,150 @@ export function WardrobeUploadForm({
             e.target.value = ''
           }}
         />
+        <input
+          ref={cameraInputRef}
+          id="camera-upload-input"
+          type="file"
+          accept="image/*"
+          capture="environment"
+          multiple
+          className="hidden"
+          onChange={(e) => {
+            onFiles(e.target.files)
+            e.target.value = ''
+          }}
+        />
+        <input
+          ref={galleryInputRef}
+          id="gallery-upload-input"
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(e) => {
+            onFiles(e.target.files)
+            e.target.value = ''
+          }}
+        />
 
-        <button
-          type="button"
+        <div
+          className="mx-auto flex w-full max-w-[860px] flex-col items-center justify-center rounded-[24px] border-2 border-dashed border-[#E3DDCF] bg-white px-5 py-6 transition-colors hover:border-text-primary hover:bg-brand-bg md:min-h-[320px] md:px-8 md:py-8"
           onClick={() => void openFilePicker()}
-          disabled={limitChecking}
-          className="flex w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[#1C1C1C]/15 bg-white/60 px-4 py-12 text-center transition-colors hover:border-[#E8724A]/40 hover:bg-white/90 disabled:opacity-60 disabled:hover:border-[#1C1C1C]/15 disabled:hover:bg-white/60"
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              void openFilePicker()
+            }
+          }}
         >
-          <span className="text-3xl" aria-hidden>
-            📷
-          </span>
-          <span className="mt-3 text-sm font-semibold text-[#1C1C1C]">
-            Tap to add photos
-          </span>
-          <span className="mt-1 text-xs text-[#1C1C1C]/50">
-            Camera or gallery · select many at once
-          </span>
-        </button>
+          <div className="flex w-full max-w-[760px] flex-col items-stretch gap-4 md:flex-row md:items-center">
+            <label
+              htmlFor="camera-upload-input"
+              className="group relative flex flex-1 cursor-pointer flex-col items-center rounded-2xl bg-brand-bg p-8 text-center transition-colors hover:bg-brand-surface"
+              onClick={(e) => {
+                e.stopPropagation()
+                cameraInputRef.current?.click()
+              }}
+            >
+              <Camera className="mb-4 h-12 w-12 text-text-primary" />
+              <p className="text-[22px] font-semibold text-text-primary">
+                Take a photo
+              </p>
+              <p className="mt-1 text-sm text-text-secondary">Use your camera</p>
+            </label>
+
+            <div className="hidden items-center justify-center md:flex">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-sm font-medium text-text-muted">
+                or
+              </span>
+            </div>
+
+            <label
+              htmlFor="gallery-upload-input"
+              className="group relative flex flex-1 cursor-pointer flex-col items-center rounded-2xl bg-brand-bg p-8 text-center transition-colors hover:bg-brand-surface"
+              onClick={(e) => {
+                e.stopPropagation()
+                galleryInputRef.current?.click()
+              }}
+            >
+              <ImagePlus className="mb-4 h-12 w-12 text-text-primary" />
+              <p className="text-[22px] font-semibold text-text-primary">
+                Upload from gallery
+              </p>
+              <p className="mt-1 text-sm text-text-secondary">
+                Select multiple at once
+              </p>
+            </label>
+          </div>
+        </div>
+
+        {uploadingCount > 0 ? (
+          <div className="mx-auto mt-4 w-full max-w-[860px]">
+            <p className="mb-2 text-sm text-text-secondary">
+              Uploading {finishedCount} of {totalCount} photos...
+            </p>
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-brand-border">
+              <div
+                className="h-full rounded-full bg-text-primary transition-all duration-300"
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+          </div>
+        ) : null}
+
+        {rows.length === 0 ? (
+          <p className="mt-4 text-center text-[14px] text-text-muted">
+            💡 Tip: You can select all your clothes at once from your gallery
+          </p>
+        ) : null}
 
         {rows.length > 0 ? (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="mx-auto mt-8 grid max-w-[960px] grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
             {rows.map((row) => (
               <motion.div
                 layout
                 key={row.key}
                 initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="overflow-hidden rounded-2xl border border-[#1C1C1C]/[0.08] bg-white/90 shadow-sm"
+                className="overflow-hidden rounded-2xl border border-brand-border/70 bg-white shadow-sm"
               >
-                <div className="relative aspect-square bg-[#F5F0E8]">
+                <div className="relative aspect-square bg-brand-surface">
                   <Image
                     src={row.preview}
                     alt=""
                     fill
                     className="object-cover"
-                    sizes="200px"
+                    sizes="(max-width: 768px) 45vw, (max-width: 1280px) 30vw, 22vw"
                     unoptimized
                   />
+                  <button
+                    type="button"
+                    onClick={() => removeQueuedRow(row.key)}
+                    className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm transition-colors hover:bg-black/60"
+                    aria-label="Remove photo"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                   <span
-                    className="absolute right-2 top-2 max-w-[min(100%,8rem)] rounded-full bg-black/55 px-2 py-0.5 text-center text-[10px] font-semibold leading-tight text-white backdrop-blur-sm"
-                    data-status={row.status}
+                    className="absolute right-2 top-2 rounded-full px-2 py-1 text-[10px] font-semibold text-white backdrop-blur-sm"
                     title={row.dbError ?? undefined}
                   >
-                    {row.status === 'uploading'
-                      ? 'Uploading...'
-                      : row.status === 'error'
-                        ? 'Error'
-                        : row.storagePath
-                          ? '✓ Added'
-                          : 'Error'}
+                    {row.status === 'uploading' ? (
+                      <span className="flex items-center gap-1 rounded-full bg-amber-500/90 px-2 py-0.5">
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                        Uploading...
+                      </span>
+                    ) : row.status === 'error' ? (
+                      <span className="rounded-full bg-red-500/90 px-2 py-0.5">
+                        Error
+                      </span>
+                    ) : (
+                      <span className="rounded-full bg-emerald-600/90 px-2 py-0.5">
+                        ✓ Added
+                      </span>
+                    )}
                   </span>
                 </div>
                 <div className="p-2">
@@ -337,51 +447,49 @@ export function WardrobeUploadForm({
                       className="mb-2 text-[10px] leading-snug text-amber-800/90"
                       title={row.dbError}
                     >
-                      Uploaded to storage, but saving to your closet failed
-                      (check profiles / RLS). You can still tap Done.
+                      Uploaded to storage, but saving to your closet failed.
                     </p>
                   ) : null}
-                  <Input
-                    placeholder="Label (optional)"
-                    value={row.label}
-                    onChange={(e) =>
-                      updateLabel(row.key, e.target.value, row.itemId)
-                    }
-                    disabled={row.status === 'uploading' && !row.storagePath}
-                    className="h-9 rounded-lg text-xs"
-                  />
+                  {row.status === 'done' ? (
+                    <Input
+                      placeholder="Label (optional)"
+                      value={row.label}
+                      onChange={(e) =>
+                        updateLabel(row.key, e.target.value, row.itemId)
+                      }
+                      className="h-9 rounded-lg bg-white/80 text-[13px] backdrop-blur-sm"
+                    />
+                  ) : null}
                 </div>
               </motion.div>
             ))}
           </div>
         ) : null}
-      </AppMaxWidth>
 
-      {!floatingComplete && doneCount > 0 ? (
-        <AppMaxWidth className="mt-8 pb-4">
-          <Button
-            type="button"
-            className="h-12 w-full rounded-xl text-base shadow-md"
-            onClick={onComplete}
-          >
-            {completeLabel}
-          </Button>
-        </AppMaxWidth>
-      ) : null}
+        {doneCount > 0 ? (
+          <>
+            <div className="mx-auto mt-8 hidden w-full max-w-[860px] justify-center md:flex">
+              <Button
+                type="button"
+                className="rounded-full px-12 py-4 text-[18px] font-semibold"
+                onClick={onComplete}
+              >
+                {completeLabel}
+              </Button>
+            </div>
 
-      {floatingComplete && doneCount > 0 ? (
-        <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-[#1C1C1C]/[0.06] bg-[#FAF7F2]/95 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-md">
-          <AppMaxWidth>
-            <Button
-              type="button"
-              className="h-12 w-full rounded-xl text-base shadow-md"
-              onClick={onComplete}
-            >
-              {completeLabel}
-            </Button>
-          </AppMaxWidth>
-        </div>
-      ) : null}
+            <div className="fixed bottom-6 left-4 right-4 z-50 md:hidden">
+              <Button
+                type="button"
+                className="w-full rounded-full px-12 py-4 text-[18px] font-semibold shadow-lg"
+                onClick={onComplete}
+              >
+                {completeLabel}
+              </Button>
+            </div>
+          </>
+        ) : null}
+      </div>
 
       {limitModalOpen ? (
         <div
@@ -389,11 +497,11 @@ export function WardrobeUploadForm({
           role="dialog"
           aria-modal="true"
         >
-          <div className="w-full max-w-sm rounded-2xl border border-[#1C1C1C]/[0.08] bg-[#FAF7F2] p-5 shadow-xl">
-            <h2 className="text-lg font-bold tracking-tight text-[#1C1C1C]">
+          <div className="w-full max-w-sm rounded-2xl border border-brand-border/70 bg-brand-bg p-5 shadow-xl">
+            <h2 className="text-lg font-bold tracking-tight text-text-primary">
               You've reached your limit 👗
             </h2>
-            <p className="mt-2 text-sm leading-relaxed text-[#1C1C1C]/70">
+            <p className="mt-2 text-sm leading-relaxed text-text-primary/70">
               Free plan includes up to 50 wardrobe items. Upgrade to Pro for
               unlimited uploads.
             </p>
@@ -401,14 +509,14 @@ export function WardrobeUploadForm({
               <Button
                 type="button"
                 variant="outline"
-                className="rounded-xl border-[#1C1C1C]/15 bg-white/70"
+                className="rounded-xl border-brand-border/70 bg-white"
                 onClick={() => setLimitModalOpen(false)}
               >
                 Maybe later
               </Button>
               <Button
                 type="button"
-                className="rounded-xl bg-[#E8724A] text-white hover:bg-[#d4633e]"
+                className="rounded-xl"
                 onClick={() => {
                   setLimitModalOpen(false)
                   router.push('/pricing')
