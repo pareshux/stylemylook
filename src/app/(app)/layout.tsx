@@ -7,7 +7,7 @@ import { BottomNav } from '@/components/app/bottom-nav'
 import { TopNav } from '@/components/app/top-nav'
 import { cn } from '@/lib/utils'
 
-const HIDE_NAV_PREFIXES = ['/onboarding', '/suggestions', '/wardrobe/upload']
+const HIDE_NAV_PREFIXES = ['/onboarding', '/wardrobe/upload']
 
 export default function AppGroupLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname()

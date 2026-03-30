@@ -4,7 +4,7 @@ import { SuggestionsContent } from './suggestions-content'
 
 function SuggestionsFallback() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#FAF7F2] text-sm text-[#1C1C1C]/50">
+    <div className="flex min-h-screen items-center justify-center bg-[#F5F3EC] text-sm text-[#8A8680]">
       Loading…
     </div>
   )
