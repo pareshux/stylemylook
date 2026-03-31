@@ -308,6 +308,12 @@ type StickyStepProps = {
   mockup: React.ReactNode
 }
 
+const accessoryChips = {
+  'Boho Festival': ['Ankle boots', 'Woven bag'],
+  'Playful Coquette': ['Ballet flats', 'Pearl necklace'],
+  'Clean Minimal': ['White sneakers', 'Minimal watch'],
+} as const
+
 const clothingItems = [
   {
     url: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=200&q=80',
@@ -612,6 +618,25 @@ function AnimatedOutfitMockup() {
                       {card.name}
                     </p>
                     <p className={`text-[10px] ${card.matchClass}`}>{card.match}</p>
+                    <div className="mt-2 border-t border-[#E3DDCF] pt-2">
+                      <p className="mb-1.5 text-[8px] uppercase tracking-wider text-[#8A8680]">
+                        COMPLETE THE LOOK
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {(accessoryChips[card.name as keyof typeof accessoryChips] ?? []).map(
+                          (chip) => (
+                            <a
+                              key={chip}
+                              href="#"
+                              className="flex items-center gap-1 rounded-full border border-[#E3DDCF] bg-[#F5F3EC] px-2 py-1 text-[9px] text-[#4E4E4E] transition-colors hover:border-[#2A2A2A]"
+                            >
+                              <ShoppingBag size={8} className="text-[#8A8680]" />
+                              {chip}
+                            </a>
+                          )
+                        )}
+                      </div>
+                    </div>
                   </motion.div>
                 ) : (
                   <div key={card.name} className="min-w-0 flex-1" />
@@ -624,8 +649,11 @@ function AnimatedOutfitMockup() {
                 phase === 3 ? 'animate-pulse' : ''
               }`}
             >
-              ↻ Generate new ideas
+              ↻ Suggest new looks
             </button>
+            <p className="mt-1.5 flex items-center justify-center gap-1 text-center text-[10px] text-[#8A8680]">
+              <span>✨</span> Includes Google Shopping links to complete your look
+            </p>
           </>
         )}
       </div>
@@ -863,9 +891,9 @@ function HowItWorksSection() {
     },
     {
       index: 3,
-      title: 'Get 3 outfits instantly',
+      title: 'Get 3 complete looks — instantly',
       body:
-        'AI looks at your actual clothes, reads the occasion, and puts together 3 complete outfit combinations — with styling tips and accessories to complete the look.',
+        "AI builds outfits from clothes you already own, then tells you exactly what to add to complete the look — with direct links to shop it on Google.",
       tags: (
         <>
           <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
@@ -873,14 +901,14 @@ function HowItWorksSection() {
               className="size-3.5 shrink-0 text-[#4E4E4E]"
               aria-hidden
             />
-            AI-powered
+            AI-powered styling
           </span>
           <span className="inline-flex items-center gap-2 rounded-full border border-[#E3DDCF] bg-white px-4 py-2 text-[13px] font-medium text-[#4E4E4E]">
             <ShoppingBag
               className="size-3.5 shrink-0 text-[#4E4E4E]"
               aria-hidden
             />
-            From your closet
+            Shop what&apos;s missing
           </span>
         </>
       ),
@@ -904,8 +932,8 @@ function HowItWorksSection() {
             3 easy steps
           </h2>
           <p className="text-lg text-[#4E4E4E] mb-12 md:mb-16 md:text-xl md:whitespace-nowrap">
-            No stylist needed. No guesswork. Just AI that actually knows your
-            clothes.
+            AI styles you from clothes you own — then finds what&apos;s missing
+            on Google Shopping.
           </p>
         </header>
       </div>
