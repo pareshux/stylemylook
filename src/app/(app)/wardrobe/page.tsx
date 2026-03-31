@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Trash2, Eye, X, Plus } from 'lucide-react'
+import { Trash2, Eye, X, Plus, LayoutGrid, List } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 import { WardrobeUploadForm } from '@/components/app/wardrobe-upload-form'
@@ -14,6 +14,46 @@ interface WardrobeItem {
   user_notes: string | null
   created_at: string
   storage_path: string | null
+  item_type: string | null
+}
+
+const categories = [
+  { value: 'top', label: 'Top', emoji: '👕' },
+  { value: 'bottom', label: 'Bottom', emoji: '👖' },
+  { value: 'dress', label: 'Dress', emoji: '👗' },
+  { value: 'jacket', label: 'Jacket', emoji: '🧥' },
+  { value: 'shoes', label: 'Shoes', emoji: '👟' },
+  { value: 'bag', label: 'Bag', emoji: '👜' },
+  { value: 'accessory', label: 'Accessory', emoji: '💍' },
+  { value: 'other', label: 'Other', emoji: '✨' },
+] as const
+
+const filters = [
+  'All',
+  '👕 Tops',
+  '👖 Bottoms',
+  '👗 Dresses',
+  '🧥 Jackets',
+  '👟 Shoes',
+  '👜 Bags',
+  '💍 Accessories',
+  '✨ Other',
+] as const
+
+const filterMap: Record<(typeof filters)[number], string> = {
+  All: 'all',
+  '👕 Tops': 'top',
+  '👖 Bottoms': 'bottom',
+  '👗 Dresses': 'dress',
+  '🧥 Jackets': 'jacket',
+  '👟 Shoes': 'shoes',
+  '👜 Bags': 'bag',
+  '💍 Accessories': 'accessory',
+  '✨ Other': 'other',
+}
+
+function categoryEmoji(itemType?: string | null) {
+  return categories.find((c) => c.value === (itemType ?? 'other'))?.emoji ?? '✨'
 }
 
 async function getSupabase() {
@@ -31,6 +71,8 @@ export default function WardrobePage() {
   const [previewItem, setPreviewItem] = useState<WardrobeItem | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [uploadOpen, setUploadOpen] = useState(false)
+  const [view, setView] = useState<'grid' | 'table'>('grid')
+  const [activeFilter, setActiveFilter] = useState<(typeof filters)[number]>('All')
   const router = useRouter()
 
   const isSelectionMode = selectedIds.size > 0
@@ -48,7 +90,7 @@ export default function WardrobePage() {
 
       const { data } = await supabase
         .from('wardrobe_items')
-        .select('id, image_url, user_notes, created_at, storage_path')
+        .select('id, image_url, user_notes, created_at, storage_path, item_type')
         .eq('user_id', session.user.id)
         .order('created_at', { ascending: false })
 
@@ -119,6 +161,30 @@ export default function WardrobePage() {
     }
   }
 
+  const categoryCounts = items.reduce<Record<string, number>>((acc, item) => {
+    const cat = item.item_type || 'other'
+    acc[cat] = (acc[cat] || 0) + 1
+    return acc
+  }, {})
+
+  const filtered =
+    activeFilter === 'All'
+      ? items
+      : items.filter((item) => item.item_type === filterMap[activeFilter])
+
+  async function updateItemCategory(itemId: string, category: string) {
+    const supabase = await getSupabase()
+    await supabase
+      .from('wardrobe_items')
+      .update({ item_type: category })
+      .eq('id', itemId)
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === itemId ? { ...item, item_type: category } : item
+      )
+    )
+  }
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#F5F3EC]">
@@ -178,18 +244,72 @@ export default function WardrobePage() {
                     {items.length} {items.length === 1 ? 'item' : 'items'}
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setUploadOpen(true)}
-                  className="flex items-center gap-2 rounded-full bg-[#2A2A2A] px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-[#404040]"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add items
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setView('grid')}
+                    className={`rounded-lg p-2 transition-colors ${
+                      view === 'grid'
+                        ? 'bg-[#2A2A2A] text-white'
+                        : 'text-[#8A8680] hover:text-[#2A2A2A]'
+                    }`}
+                    aria-label="Grid view"
+                  >
+                    <LayoutGrid className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setView('table')}
+                    className={`rounded-lg p-2 transition-colors ${
+                      view === 'table'
+                        ? 'bg-[#2A2A2A] text-white'
+                        : 'text-[#8A8680] hover:text-[#2A2A2A]'
+                    }`}
+                    aria-label="Table view"
+                  >
+                    <List className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUploadOpen(true)}
+                    className="flex items-center gap-2 rounded-full bg-[#2A2A2A] px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-[#404040]"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add items
+                  </button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
+
+        {items.length > 0 ? (
+          <div className="mb-6 overflow-x-auto">
+            <div className="flex w-max gap-2">
+              {filters.map((filter) => {
+                const active = activeFilter === filter
+                const count =
+                  filter === 'All'
+                    ? items.length
+                    : (categoryCounts[filterMap[filter]] ?? 0)
+                return (
+                  <button
+                    key={filter}
+                    type="button"
+                    onClick={() => setActiveFilter(filter)}
+                    className={`cursor-pointer rounded-full border px-4 py-1.5 text-sm transition-colors ${
+                      active
+                        ? 'border-[#2A2A2A] bg-[#2A2A2A] text-white'
+                        : 'border-[#E3DDCF] bg-white text-[#4E4E4E] hover:border-[#2A2A2A]'
+                    }`}
+                  >
+                    {active ? `${filter} (${count})` : filter}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        ) : null}
 
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
@@ -210,9 +330,9 @@ export default function WardrobePage() {
           </div>
         ) : null}
 
-        {items.length > 0 ? (
+        {filtered.length > 0 && view === 'grid' ? (
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4 xl:grid-cols-5">
-            {items.map((item) => {
+            {filtered.map((item) => {
               const isSelected = selectedIds.has(item.id)
               return (
                 <div
@@ -297,16 +417,141 @@ export default function WardrobePage() {
                     <Trash2 className="h-3.5 w-3.5 text-red-500" />
                   </button>
 
+                  <div className="absolute bottom-2 right-2 rounded-full bg-white/80 px-2 py-0.5 text-[10px] backdrop-blur">
+                    {categoryEmoji(item.item_type)}
+                  </div>
+
                   {item.user_notes ? (
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-2">
-                      <p className="truncate text-xs font-medium text-white">
-                        {item.user_notes}
-                      </p>
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-2 pr-14">
+                      <p className="truncate text-xs font-medium text-white">{item.user_notes}</p>
                     </div>
                   ) : null}
                 </div>
               )
             })}
+          </div>
+        ) : null}
+
+        {view === 'table' && items.length > 0 ? (
+          filtered.length > 0 ? (
+            <div className="overflow-hidden rounded-2xl border border-[#E3DDCF] bg-white">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-[#E3DDCF]">
+                      <th className="w-16 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#8A8680]">
+                        Photo
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#8A8680]">
+                        Label
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#8A8680]">
+                        Category
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#8A8680]">
+                        Added
+                      </th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[#8A8680]">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((item) => (
+                      <tr
+                        key={item.id}
+                        className="group border-b border-[#E3DDCF] transition-colors last:border-b-0 hover:bg-white"
+                      >
+                        <td className="px-4 py-3">
+                          <div
+                            className="h-12 w-12 cursor-pointer overflow-hidden rounded-xl bg-[#E3DDCF]"
+                            onClick={() => setPreviewItem(item)}
+                          >
+                            <img
+                              src={item.image_url}
+                              alt={item.user_notes || 'Wardrobe item'}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="text-sm font-medium text-[#2A2A2A]">
+                            {item.user_notes || (
+                              <span className="text-[#8A8680]">No label</span>
+                            )}
+                          </p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <select
+                            value={item.item_type || 'other'}
+                            onChange={(e) =>
+                              void updateItemCategory(item.id, e.target.value)
+                            }
+                            className="cursor-pointer rounded-lg border border-[#E3DDCF] bg-white px-2 py-1.5 text-xs text-[#2A2A2A]"
+                          >
+                            {categories.map((cat) => (
+                              <option key={cat.value} value={cat.value}>
+                                {cat.emoji} {cat.label}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="text-xs text-[#8A8680]">
+                            {new Date(item.created_at).toLocaleDateString(
+                              'en-IN',
+                              {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric',
+                              }
+                            )}
+                          </p>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => setPreviewItem(item)}
+                              className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E3DDCF] transition-colors hover:bg-[#F5F3EC]"
+                            >
+                              <Eye className="h-3.5 w-3.5 text-[#8A8680]" />
+                            </button>
+                            <button
+                              onClick={() => void deleteSingle(item)}
+                              className="flex h-8 w-8 items-center justify-center rounded-full border border-[#E3DDCF] transition-colors hover:border-red-300 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-3.5 w-3.5 text-[#8A8680]" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <div className="py-12 text-center">
+              <p className="text-sm text-[#8A8680]">No items in this category yet</p>
+              <button
+                onClick={() => setActiveFilter('All')}
+                className="mt-2 text-sm text-[#2A2A2A] underline"
+              >
+                Show all items
+              </button>
+            </div>
+          )
+        ) : null}
+
+        {view === 'grid' && items.length > 0 && filtered.length === 0 ? (
+          <div className="py-12 text-center">
+            <p className="text-sm text-[#8A8680]">No items in this category yet</p>
+            <button
+              onClick={() => setActiveFilter('All')}
+              className="mt-2 text-sm text-[#2A2A2A] underline"
+            >
+              Show all items
+            </button>
           </div>
         ) : null}
       </div>

@@ -18,11 +18,23 @@ type Row = {
   preview: string
   status: 'uploading' | 'done' | 'error'
   label: string
+  category: string
   itemId?: string
   storagePath?: string
   imageUrl?: string
   dbError?: string | null
 }
+
+const categories = [
+  { value: 'top', label: 'Top', emoji: '👕' },
+  { value: 'bottom', label: 'Bottom', emoji: '👖' },
+  { value: 'dress', label: 'Dress', emoji: '👗' },
+  { value: 'jacket', label: 'Jacket', emoji: '🧥' },
+  { value: 'shoes', label: 'Shoes', emoji: '👟' },
+  { value: 'bag', label: 'Bag', emoji: '👜' },
+  { value: 'accessory', label: 'Accessory', emoji: '💍' },
+  { value: 'other', label: 'Other', emoji: '✨' },
+] as const
 
 function extForFile(file: File) {
   if (file.type === 'image/png') return 'png'
@@ -81,6 +93,7 @@ export function WardrobeUploadForm({
       path: string
       publicUrl: string
       notes: string | null
+      category: string
     }) => {
       await ensureProfileRow(args.userId)
 
@@ -97,6 +110,7 @@ export function WardrobeUploadForm({
           storage_path: args.path,
           image_url: args.publicUrl,
           user_notes: args.notes,
+          item_type: args.category,
         })
         .select('id')
 
@@ -158,11 +172,15 @@ export function WardrobeUploadForm({
       const { data: pub } = supabase.storage.from(WARDROBE_BUCKET).getPublicUrl(path)
       const publicUrl = pub.publicUrl
 
+      const currentRow =
+        rowsRef.current.find((r) => r.key === row.key) ?? row
+
       const { itemId, error: dbMsg } = await insertWardrobeRow({
         userId: user.id,
         path,
         publicUrl,
-        notes: row.label.trim() || null,
+        notes: currentRow.label.trim() || null,
+        category: currentRow.category,
       })
 
       setRows((prev) =>
@@ -220,6 +238,7 @@ export function WardrobeUploadForm({
         preview: URL.createObjectURL(file),
         status: 'uploading',
         label: '',
+        category: 'other',
       }))
 
       setRows((prev) => [...prev, ...newRows])
@@ -279,6 +298,22 @@ export function WardrobeUploadForm({
     await supabase
       .from('wardrobe_items')
       .update({ user_notes: label.trim() || null })
+      .eq('id', itemId)
+  }
+
+  async function updateCategory(
+    rowKey: string,
+    category: string,
+    itemId?: string,
+    status?: Row['status']
+  ) {
+    setRows((prev) =>
+      prev.map((r) => (r.key === rowKey ? { ...r, category } : r))
+    )
+    if (status !== 'done' || !itemId) return
+    await supabase
+      .from('wardrobe_items')
+      .update({ item_type: category })
       .eq('id', itemId)
   }
 
@@ -431,6 +466,25 @@ export function WardrobeUploadForm({
                         className="h-9 rounded-lg bg-white/80 text-[13px] backdrop-blur-sm"
                       />
                     ) : null}
+                    <select
+                      value={row.category}
+                      onChange={(e) =>
+                        void updateCategory(
+                          row.key,
+                          e.target.value,
+                          row.itemId,
+                          row.status
+                        )
+                      }
+                      className="mt-1.5 w-full cursor-pointer rounded-lg border border-[#E3DDCF] bg-white px-2 py-1.5 text-xs text-[#2A2A2A]"
+                      disabled={row.status === 'uploading'}
+                    >
+                      {categories.map((cat) => (
+                        <option key={cat.value} value={cat.value}>
+                          {cat.emoji} {cat.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </motion.div>
               ))}
