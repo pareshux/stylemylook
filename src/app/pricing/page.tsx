@@ -74,8 +74,8 @@ export default function PricingPage() {
         </div>
       </nav>
 
-      <div className="mx-auto max-w-[1280px] px-6 md:px-12">
-        <section className="pb-12 pt-16 text-center">
+      <section className="pt-16 text-center">
+        <div className="mx-auto max-w-[1280px] px-6 md:px-12">
           <p className="mb-3 text-[12px] font-bold uppercase tracking-widest text-[#8A8680]">
             SIMPLE PRICING
           </p>
@@ -86,10 +86,13 @@ export default function PricingPage() {
             AI styles you from clothes you own — then finds what&apos;s missing on
             Google Shopping. Start free, upgrade when you&apos;re ready.
           </p>
-        </section>
+        </div>
+      </section>
 
-        <section className="mx-auto grid max-w-3xl grid-cols-1 gap-5 md:grid-cols-2">
-          <div className="rounded-2xl border border-[#E3DDCF] bg-white p-8">
+      <section className="mb-10 mt-10">
+        <div className="mx-auto max-w-[1280px] px-6 md:px-12">
+          <div className="mx-auto grid max-w-4xl grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="flex-1 rounded-2xl border border-[#E3DDCF] bg-white p-8">
             <h2 className="text-[28px] font-bold text-[#2A2A2A]">Free</h2>
             <div className="mt-3 flex items-end gap-2">
               <span className="text-[48px] font-bold leading-none text-[#2A2A2A]">
@@ -111,6 +114,9 @@ export default function PricingPage() {
                   {item}
                 </li>
               ))}
+              <p className="ml-6 -mt-2 text-xs text-[#8A8680]">
+                Pro gets 4 suggestions per outfit
+              </p>
               <li className="flex items-center gap-2 text-[#8A8680] line-through">
                 <X className="h-4 w-4" />
                 Unlimited suggestions
@@ -130,9 +136,9 @@ export default function PricingPage() {
             >
               Current plan
             </button>
-          </div>
+            </div>
 
-          <div className="relative rounded-2xl border-2 border-[#2A2A2A] bg-[#2A2A2A] p-8">
+            <div className="relative flex-1 rounded-2xl border-2 border-[#2A2A2A] bg-[#2A2A2A] p-8">
             <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-[#E3DDCF] px-4 py-1.5 text-xs font-bold text-[#2A2A2A]">
               Most popular
             </span>
@@ -164,6 +170,21 @@ export default function PricingPage() {
                 </li>
               ))}
             </ul>
+            <div className="mb-5 mt-4 rounded-xl border border-white/20 bg-white/10 p-4">
+              <div className="flex items-start gap-3">
+                <span className="flex-shrink-0 text-2xl">🛍️</span>
+                <div>
+                  <p className="mb-1 text-sm font-semibold text-white">
+                    Shop what&apos;s missing from your look
+                  </p>
+                  <p className="text-xs leading-relaxed text-white/60">
+                    After every outfit, AI tells you exactly what accessories
+                    would complete it — with direct Google Shopping links. Pro
+                    gets 4 suggestions per outfit vs 2 on Free.
+                  </p>
+                </div>
+              </div>
+            </div>
             <button
               type="button"
               onClick={() =>
@@ -178,27 +199,13 @@ export default function PricingPage() {
             <p className="mt-3 text-center text-[12px] text-[#8A8680]">
               🔒 Secure payment · Cancel anytime
             </p>
-          </div>
-        </section>
-
-        <div className="mx-auto mb-10 max-w-2xl">
-          <div className="flex items-start gap-4 rounded-2xl border border-[#E3DDCF] bg-[#F5F3EC] p-6">
-            <div className="flex-shrink-0 text-3xl">🛍️</div>
-            <div>
-              <h3 className="mb-1 text-base font-bold text-[#2A2A2A]">
-                Shop what&apos;s missing from your wardrobe
-              </h3>
-              <p className="text-sm leading-relaxed text-[#4E4E4E]">
-                After every outfit suggestion, StyleMyLook tells you exactly what
-                accessories or pieces would complete the look — with direct
-                Google Shopping links to find them. Free users get 2 suggestions
-                per outfit. Pro users get 4.
-              </p>
             </div>
           </div>
         </div>
+      </section>
 
-        <section className="py-2">
+      <section className="mt-10 py-2">
+        <div className="mx-auto max-w-[1280px] px-6 md:px-12">
           <h2 className="mb-8 text-center text-[32px] font-bold text-[#2A2A2A]">
             What&apos;s included
           </h2>
@@ -264,9 +271,11 @@ export default function PricingPage() {
               ))}
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className="py-12">
+      <section className="py-12">
+        <div className="mx-auto max-w-[1280px] px-6 md:px-12">
           <div className="grid grid-cols-1 gap-6 text-center md:grid-cols-3">
             <div className="flex flex-col items-center">
               <span className="text-[32px]">🔒</span>
@@ -296,9 +305,12 @@ export default function PricingPage() {
               </p>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className="mx-auto max-w-2xl py-12">
+      <section className="mt-10 py-12">
+        <div className="mx-auto max-w-[1280px] px-6 md:px-12">
+          <div className="mx-auto max-w-2xl">
           <h2 className="mb-8 text-center text-[32px] font-bold text-[#2A2A2A]">
             Frequently asked questions
           </h2>
@@ -333,9 +345,12 @@ export default function PricingPage() {
               </AnimatePresence>
             </div>
           ))}
-        </section>
+          </div>
+        </div>
+      </section>
 
-        <section className="mb-8 py-12">
+      <section className="mb-8 mt-10 py-12">
+        <div className="mx-auto max-w-[1280px] px-6 md:px-12">
           <div className="mx-auto max-w-2xl rounded-2xl border border-[#E3DDCF] bg-white p-8 text-center md:p-12">
             <p className="mb-4 text-4xl">💬</p>
             <h3 className="text-[24px] font-bold text-[#2A2A2A]">
@@ -361,8 +376,8 @@ export default function PricingPage() {
               </a>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
       <footer className="border-t border-[#E3DDCF] py-6 text-center text-sm text-[#8A8680]">
         © 2025 StyleMyLook ·{' '}
