@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useRef, useState } from 'react'
+import Link from 'next/link'
 import { LiveCounter } from '@/components/ui/LiveCounter'
 import {
   motion,
@@ -891,12 +892,12 @@ export default function HomePage() {
             Made with ❤️ and way too much AI in India 🇮🇳
           </p>
           <div className="flex shrink-0 flex-wrap items-center justify-center gap-1 md:justify-end">
-            <a
+            <Link
               href="/privacy"
               className="hover:text-[#2A2A2A] transition-colors"
             >
               Privacy Policy
-            </a>
+            </Link>
             <span aria-hidden> · </span>
             <a href="#" className="hover:text-text-primary">
               Contact Us
