@@ -30,7 +30,7 @@ const fadeUp = {
 const STYLEMYLOOK_LOGO_URL =
   'https://eqwqddsgvxrpksvptlmx.supabase.co/storage/v1/object/public/assets/stylemylook_logo.svg'
 
-const INSTAGRAM_URL = 'https://instagram.com'
+const INSTAGRAM_URL = 'https://www.instagram.com/stylemylookai'
 
 const sectionPx = 'px-4 md:px-8'
 
@@ -91,30 +91,6 @@ async function postWaitlist(
   }
 
   return { ok: false, error: 'Unexpected response from server' }
-}
-
-function InstagramGlyph({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <rect
-        x="2"
-        y="2"
-        width="20"
-        height="20"
-        rx="5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-      />
-      <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="1.5" />
-      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" />
-    </svg>
-  )
 }
 
 function WaitlistSuccessView({ email }: { email: string }) {
@@ -353,7 +329,10 @@ function StickyStep({ index, title, body, tags, mockup }: StickyStepProps) {
   )
 
   return (
-    <div ref={ref} className="relative flex min-h-screen items-center py-20">
+    <div
+      ref={ref}
+      className="relative flex min-h-[60vh] items-center py-10 md:min-h-[70vh] md:py-14"
+    >
       <div className="mx-auto grid w-full max-w-[1280px] grid-cols-1 items-start gap-16 px-6 md:grid-cols-2 md:px-12">
         <motion.div
           style={{ opacity, y: textY }}
@@ -739,16 +718,19 @@ function HowItWorksSection() {
   return (
     <section ref={sectionRef} className="bg-[#F5F3EC] pt-12 pb-24 md:pt-16 md:pb-32">
       <div className="mx-auto max-w-[1280px] px-6 md:px-12">
-        <header className="mb-16 text-center md:mb-20">
+        <header className="pb-8 text-center md:pb-12">
           <p className="mb-4 text-[12px] font-bold uppercase tracking-[3px] text-[#8A8680]">
             HOW IT WORKS
           </p>
-          <h2 className="mx-auto mb-4 max-w-[520px] text-[42px] font-bold leading-[1.1] text-[#2A2A2A] md:text-[64px]">
-            From wardrobe to outfit
+          <h2
+            className="mb-4 text-4xl font-bold leading-tight text-[#2A2A2A] md:text-5xl lg:text-[56px]"
+            style={{ maxWidth: '520px', margin: '0 auto 16px' }}
+          >
+            From wardrobe to outfit in
             <br />
-            in 3 steps
+            3 easy steps
           </h2>
-          <p className="mx-auto max-w-3xl text-[18px] leading-[1.65] text-[#4E4E4E] md:text-[20px] md:whitespace-nowrap">
+          <p className="text-lg text-[#4E4E4E] mb-12 md:mb-16 md:text-xl md:whitespace-nowrap">
             No stylist needed. No guesswork. Just AI that actually knows your
             clothes.
           </p>
@@ -756,8 +738,13 @@ function HowItWorksSection() {
       </div>
 
       <div>
-        {steps.map((step) => (
-          <StickyStep key={step.index} {...step} />
+        {steps.map((step, idx) => (
+          <React.Fragment key={step.index}>
+            <StickyStep {...step} />
+            {idx < steps.length - 1 ? (
+              <div className="mx-auto h-8 w-px bg-[#E3DDCF]" aria-hidden />
+            ) : null}
+          </React.Fragment>
         ))}
       </div>
 
@@ -806,17 +793,30 @@ export default function HomePage() {
             ✨ Early access is open, limited spots left
           </p>
           <div className="relative z-10 flex shrink-0 items-center gap-2">
-            <span className="hidden text-base font-normal text-text-primary md:inline">
-              Stay updated. Follow us on
-            </span>
             <a
               href={INSTAGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-text-primary"
+              className="flex items-center gap-2 text-sm text-[#4E4E4E] transition-colors hover:text-[#2A2A2A]"
               aria-label="Instagram"
             >
-              <InstagramGlyph className="h-5 w-5 shrink-0 text-text-primary" />
+              <span className="hidden md:inline">Stay updated. Follow us on</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                <circle cx="12" cy="12" r="4" />
+                <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+              </svg>
             </a>
           </div>
         </div>
