@@ -891,7 +891,10 @@ export default function HomePage() {
             Made with ❤️ and way too much AI in India 🇮🇳
           </p>
           <div className="flex shrink-0 flex-wrap items-center justify-center gap-1 md:justify-end">
-            <a href="#" className="hover:text-text-primary">
+            <a
+              href="/privacy"
+              className="hover:text-[#2A2A2A] transition-colors"
+            >
               Privacy Policy
             </a>
             <span aria-hidden> · </span>
