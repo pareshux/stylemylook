@@ -44,10 +44,11 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     '/home/:path*',
-    '/onboarding/:path*',
-    '/suggestions/:path*',
     '/wardrobe/:path*',
+    '/style-me/:path*',
     '/saved/:path*',
     '/profile/:path*',
+    '/onboarding/:path*',
+    '/suggestions/:path*',
   ],
 }
