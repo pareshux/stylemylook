@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { LiveCounter } from '@/components/ui/LiveCounter'
 import {
@@ -308,6 +308,331 @@ type StickyStepProps = {
   mockup: React.ReactNode
 }
 
+const clothingItems = [
+  {
+    url: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=200&q=80',
+    label: 'Jacket',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?w=200&q=80',
+    label: 'Shirt',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1562157873-818bc0726f68?w=200&q=80',
+    label: 'Dress',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=200&q=80',
+    label: 'Jeans',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=200&q=80',
+    label: 'Sneakers',
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=200&q=80',
+    label: 'Bag',
+  },
+]
+
+const outfitCards = [
+  {
+    name: 'Boho Festival',
+    match: '● 94% match',
+    matchClass: 'text-green-600',
+    topPick: true,
+    images: [
+      'https://images.unsplash.com/photo-1562157873-818bc0726f68?w=150&q=80',
+      'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=150&q=80',
+      'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=150&q=80',
+      null,
+    ],
+  },
+  {
+    name: 'Playful Coquette',
+    match: '● 89% match',
+    matchClass: 'text-amber-600',
+    topPick: false,
+    images: [
+      'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=150&q=80',
+      'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?w=150&q=80',
+      'https://images.unsplash.com/photo-1542272604-787c3835535d?w=150&q=80',
+      null,
+    ],
+  },
+  {
+    name: 'Clean Minimal',
+    match: '● 84% match',
+    matchClass: 'text-amber-600',
+    topPick: false,
+    images: [
+      'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?w=150&q=80',
+      'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=150&q=80',
+      'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=150&q=80',
+      null,
+    ],
+  },
+] as const
+
+function AnimatedUploadMockup() {
+  const [phase, setPhase] = useState(0)
+  const [visibleItems, setVisibleItems] = useState(0)
+
+  useEffect(() => {
+    let cancelled = false
+
+    const delay = (ms: number) =>
+      new Promise<void>((resolve) => {
+        setTimeout(() => resolve(), ms)
+      })
+
+    const sequence = async () => {
+      setPhase(0)
+      setVisibleItems(0)
+      await delay(800)
+      if (cancelled) return
+      setPhase(1)
+      await delay(800)
+      if (cancelled) return
+      setPhase(2)
+      for (let i = 1; i <= 6; i += 1) {
+        await delay(300)
+        if (cancelled) return
+        setVisibleItems(i)
+      }
+      await delay(600)
+      if (cancelled) return
+      setPhase(3)
+      await delay(1500)
+    }
+
+    void sequence()
+    const loop = setInterval(() => {
+      void sequence()
+    }, 7000)
+
+    return () => {
+      cancelled = true
+      clearInterval(loop)
+    }
+  }, [])
+
+  return (
+    <div className={`${mockupShell} relative`}>
+      <div className="flex items-center justify-between bg-[#F5F3EC] px-4 py-3">
+        <div className="flex gap-1.5">
+          <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
+          <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
+          <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
+        </div>
+        <span className="text-[10px] font-bold tracking-widest text-[#8A8680]">
+          MY WARDROBE
+        </span>
+        <span className="text-[11px] text-[#8A8680]">
+          {visibleItems} items
+        </span>
+      </div>
+
+      {phase === 3 ? (
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+          className="absolute right-2 top-2 z-10 rounded-full bg-green-500 px-3 py-1 text-xs font-semibold text-white"
+        >
+          ✓ 6 items added
+        </motion.div>
+      ) : null}
+
+      <div className="p-4">
+        <div className="grid grid-cols-3 gap-2">
+          {clothingItems.map((item, i) => {
+            const isVisible = visibleItems >= i + 1
+            return (
+              <div
+                key={item.label}
+                className="relative aspect-square overflow-hidden rounded-xl"
+              >
+                {isVisible ? (
+                  <motion.img
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.35 }}
+                    src={item.url}
+                    alt={item.label}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="h-full w-full animate-pulse bg-[#E3DDCF]" />
+                )}
+              </div>
+            )
+          })}
+        </div>
+        <div
+          className={`mt-3 flex items-center justify-center rounded-xl border-2 border-dashed py-3 text-center transition-all ${
+            phase === 1
+              ? 'scale-[1.02] border-[#2A2A2A] bg-[#F5F3EC]'
+              : 'border-[#E3DDCF] bg-transparent'
+          }`}
+        >
+          <Upload className="size-4 text-[#8A8680]" aria-hidden />
+          <span className="ml-2 text-[12px] text-[#8A8680]">Add more photos</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function AnimatedOutfitMockup() {
+  const [phase, setPhase] = useState(0)
+  const [visibleCards, setVisibleCards] = useState(0)
+
+  useEffect(() => {
+    let cancelled = false
+    const delay = (ms: number) =>
+      new Promise<void>((resolve) => {
+        setTimeout(() => resolve(), ms)
+      })
+
+    const sequence = async () => {
+      setPhase(0)
+      setVisibleCards(0)
+      await delay(1500)
+      if (cancelled) return
+      setPhase(1)
+      setVisibleCards(1)
+      await delay(150)
+      if (cancelled) return
+      setVisibleCards(2)
+      await delay(150)
+      if (cancelled) return
+      setVisibleCards(3)
+      await delay(2200)
+      if (cancelled) return
+      setPhase(2)
+      await delay(3000)
+      if (cancelled) return
+      setPhase(3)
+      await delay(1000)
+    }
+
+    void sequence()
+    const loop = setInterval(() => {
+      void sequence()
+    }, 8000)
+
+    return () => {
+      cancelled = true
+      clearInterval(loop)
+    }
+  }, [])
+
+  return (
+    <div className={mockupShell}>
+      <div className="flex items-center justify-between bg-[#F5F3EC] px-4 py-3">
+        <div className="flex gap-1.5">
+          <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
+          <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
+          <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
+        </div>
+        <span className="text-[10px] font-bold tracking-widest text-[#8A8680]">
+          YOUR OUTFITS
+        </span>
+        <span className="w-8" aria-hidden />
+      </div>
+
+      <div className="p-4">
+        {phase === 0 ? (
+          <>
+            <div className="mb-3 flex items-center gap-2 rounded-xl bg-[#F5F3EC] p-3 text-[11px] text-[#4E4E4E]">
+              <span className="size-2 rounded-full bg-[#2A2A2A] animate-pulse" />
+              ✦ AI is styling...
+            </div>
+            <div className="flex flex-row gap-3 overflow-hidden">
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="min-w-0 flex-1 rounded-xl border border-[#E3DDCF] bg-white p-3"
+                >
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[0, 1, 2, 3].map((j) => (
+                      <div
+                        key={j}
+                        className="aspect-square animate-pulse rounded-lg bg-[#E3DDCF]"
+                      />
+                    ))}
+                  </div>
+                  <div className="mt-2 h-2 w-3/4 animate-pulse rounded bg-[#E3DDCF]" />
+                  <div className="mt-1 h-2 w-1/2 animate-pulse rounded bg-[#E3DDCF]" />
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="flex flex-row gap-3 overflow-hidden">
+              {outfitCards.map((card, i) =>
+                visibleCards >= i + 1 ? (
+                  <motion.div
+                    key={card.name}
+                    initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{
+                      type: 'spring',
+                      stiffness: 300,
+                      damping: 25,
+                      delay: i * 0.15,
+                    }}
+                    className="relative min-w-0 flex-1 overflow-hidden rounded-xl border border-[#E3DDCF] bg-white p-3"
+                  >
+                    {card.topPick ? (
+                      <span className="absolute left-2 top-2 z-10 rounded-full bg-[#2A2A2A] px-2 py-0.5 text-[9px] text-white">
+                        TOP PICK
+                      </span>
+                    ) : null}
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {card.images.map((img, idx) =>
+                        img ? (
+                          <img
+                            key={`${card.name}-${idx}`}
+                            src={img}
+                            alt=""
+                            className="aspect-square w-full rounded-lg object-cover"
+                          />
+                        ) : (
+                          <div
+                            key={`${card.name}-${idx}`}
+                            className="aspect-square rounded-lg bg-[#E3DDCF]"
+                          />
+                        )
+                      )}
+                    </div>
+                    <p className="mt-2 truncate text-[11px] font-semibold text-[#2A2A2A]">
+                      {card.name}
+                    </p>
+                    <p className={`text-[10px] ${card.matchClass}`}>{card.match}</p>
+                  </motion.div>
+                ) : (
+                  <div key={card.name} className="min-w-0 flex-1" />
+                )
+              )}
+            </div>
+            <button
+              type="button"
+              className={`mt-3 rounded-full border border-[#2A2A2A] px-4 py-2 text-[12px] font-medium text-[#2A2A2A] transition hover:bg-[#2A2A2A] hover:text-white ${
+                phase === 3 ? 'animate-pulse' : ''
+              }`}
+            >
+              ↻ Generate new ideas
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function StickyStep({ index, title, body, tags, mockup }: StickyStepProps) {
   const ref = useRef<HTMLDivElement | null>(null)
   const { scrollYProgress } = useScroll({
@@ -396,53 +721,7 @@ function HowItWorksSection() {
     setActiveIndex(index)
   })
 
-  const stepOneMockup = (
-    <div className={mockupShell}>
-      <div className="flex items-center justify-between bg-[#F5F3EC] px-4 py-3">
-        <div className="flex gap-1.5">
-          <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
-          <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
-          <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
-        </div>
-        <span className="text-[10px] font-bold tracking-widest text-[#8A8680]">
-          MY WARDROBE
-        </span>
-        <span className="text-[11px] text-[#8A8680]">14 items</span>
-      </div>
-      <div className="p-4">
-        <div className="grid grid-cols-3 gap-2">
-          {[
-            { bg: '#2D3748', emoji: '🧥' },
-            { bg: '#F7F7F5', emoji: '👔', border: true },
-            { bg: '#D4956A', emoji: '👕' },
-            { bg: '#3B5998', emoji: '👖' },
-            { bg: '#D2B48C', emoji: '👟' },
-            { bg: '#1A1A1A', emoji: '👞' },
-          ].map((cell, i) => (
-            <motion.div
-              key={i}
-              className={`flex aspect-square cursor-pointer items-center justify-center rounded-xl text-2xl ${
-                cell.border ? 'border border-[#E3DDCF]' : ''
-              } hover:scale-110`}
-              style={{
-                backgroundColor: cell.bg,
-              }}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.35, delay: i * 0.06 }}
-            >
-              {cell.emoji}
-            </motion.div>
-          ))}
-        </div>
-        <div className="mt-3 flex items-center justify-center rounded-xl border-2 border-dashed border-[#E3DDCF] py-3 text-center">
-          <Upload className="size-4 text-[#8A8680]" aria-hidden />
-          <span className="ml-2 text-[12px] text-[#8A8680]">Add more photos</span>
-        </div>
-      </div>
-    </div>
-  )
+  const stepOneMockup = <AnimatedUploadMockup />
 
   const stepTwoMockup = (
     <div className={mockupShell}>
@@ -541,113 +820,7 @@ function HowItWorksSection() {
     </div>
   )
 
-  const stepThreeMockup = (
-    <div className={mockupShell}>
-      <div className="flex items-center justify-between bg-[#F5F3EC] px-4 py-3">
-        <div className="flex gap-1.5">
-          <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
-          <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
-          <span className="size-2.5 rounded-full bg-[#E3DDCF]" />
-        </div>
-        <span className="text-[10px] font-bold tracking-widest text-[#8A8680]">
-          YOUR OUTFITS
-        </span>
-        <span className="w-8" aria-hidden />
-      </div>
-      <div className="p-4">
-        <div className="mb-3 flex items-center gap-2 rounded-xl bg-[#F5F3EC] p-3">
-          <span className="text-sm text-amber-600" aria-hidden>
-            ✦
-          </span>
-          <div>
-            <p className="text-[12px] font-medium text-[#2A2A2A]">
-              Styled for Work / Business
-            </p>
-            <p className="text-[11px] text-[#8A8680]">
-              3 outfits from your wardrobe
-            </p>
-          </div>
-        </div>
-
-        <div className="relative overflow-hidden rounded-xl border border-[#E3DDCF]">
-          <span className="shimmer absolute left-2 top-2 z-10 rounded-full px-2 py-0.5 text-[9px] font-bold text-white">
-            TOP PICK
-          </span>
-          <div className="flex gap-1.5 bg-[#F8F6F3] p-3">
-            {[
-              { e: '🧥', bg: '#2D3748' },
-              { e: '👔', bg: '#F7F7F5' },
-              { e: '👖', bg: '#3B5998' },
-              { e: '👞', bg: '#1A1A1A' },
-            ].map((sq, i) => (
-              <div
-                key={i}
-                className="flex size-8 items-center justify-center rounded-lg text-base"
-                style={{ backgroundColor: sq.bg }}
-              >
-                {sq.e}
-              </div>
-            ))}
-          </div>
-          <div className="p-2">
-            <p className="text-[12px] font-semibold text-[#2A2A2A]">
-              Power Classic
-            </p>
-            <p className="text-[10px] text-green-600">● 96% match</p>
-          </div>
-        </div>
-
-        <div className="relative mt-2 overflow-hidden rounded-xl border border-[#E3DDCF]">
-          <div className="flex gap-1.5 bg-[#F8F6F3] p-3">
-            {[
-              { e: '👕', bg: '#D4956A' },
-              { e: '👖', bg: '#3B5998' },
-              { e: '👟', bg: '#D2B48C' },
-            ].map((sq, i) => (
-              <div
-                key={i}
-                className="flex size-8 items-center justify-center rounded-lg text-base"
-                style={{ backgroundColor: sq.bg }}
-              >
-                {sq.e}
-              </div>
-            ))}
-          </div>
-          <div className="p-2">
-            <p className="text-[12px] font-semibold text-[#2A2A2A]">
-              Warm &amp; Easy
-            </p>
-            <p className="text-[10px] text-amber-600">● 88% match</p>
-          </div>
-        </div>
-
-        <div className="relative mt-2 overflow-hidden rounded-xl border border-[#E3DDCF]">
-          <div className="flex items-center gap-1.5 bg-[#F8F6F3] p-2">
-            {[
-              { e: '👔', bg: '#F7F7F5' },
-              { e: '👖', bg: '#3B5998' },
-              { e: '👟', bg: '#D2B48C' },
-              { e: '⌚', bg: '#E3DDCF' },
-            ].map((sq, i) => (
-              <div
-                key={i}
-                className="flex size-7 items-center justify-center rounded-lg text-sm"
-                style={{ backgroundColor: sq.bg }}
-              >
-                {sq.e}
-              </div>
-            ))}
-          </div>
-          <div className="flex items-center justify-between p-2">
-            <p className="text-[12px] font-semibold text-[#2A2A2A]">
-              Clean Minimal
-            </p>
-            <p className="text-[10px] text-[#4E4E4E]">● 84% match</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+  const stepThreeMockup = <AnimatedOutfitMockup />
 
   const steps: StickyStepProps[] = [
     {
