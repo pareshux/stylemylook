@@ -17,6 +17,10 @@ export default function PricingPage() {
 
   const faqs = [
     {
+      q: 'How do Google Shopping suggestions work?',
+      a: "After each outfit suggestion, our AI identifies what's missing from your wardrobe to complete the look — things like shoes, a bag, or jewellery. We then generate direct Google Shopping links so you can find and buy exactly what you need. Free users get 2 suggestions per outfit, Pro users get 4.",
+    },
+    {
       q: 'What happens when I reach the free limit?',
       a: "You'll still be able to view your saved outfits and wardrobe. To generate new suggestions or add more clothes, you'll need to upgrade to Pro.",
     },
@@ -79,7 +83,8 @@ export default function PricingPage() {
             One plan. Unlimited style.
           </h1>
           <p className="mt-3 text-[18px] text-[#4E4E4E]">
-            Start free, upgrade when you&apos;re ready. No hidden fees. Cancel anytime.
+            AI styles you from clothes you own — then finds what&apos;s missing on
+            Google Shopping. Start free, upgrade when you&apos;re ready.
           </p>
         </section>
 
@@ -99,6 +104,7 @@ export default function PricingPage() {
                 '10 outfit suggestions',
                 'Save your favourite looks',
                 'AI-powered styling',
+                '2 Google Shopping suggestions per outfit',
               ].map((item) => (
                 <li key={item} className="flex items-center gap-2 text-[#2A2A2A]">
                   <Check className="h-4 w-4" />
@@ -112,6 +118,10 @@ export default function PricingPage() {
               <li className="flex items-center gap-2 text-[#8A8680] line-through">
                 <X className="h-4 w-4" />
                 Unlimited wardrobe
+              </li>
+              <li className="flex items-center gap-2 text-[#8A8680] line-through">
+                <X className="h-4 w-4" />
+                More shopping suggestions
               </li>
             </ul>
             <button
@@ -143,6 +153,8 @@ export default function PricingPage() {
                 'Unlimited wardrobe items',
                 'Unlimited outfit suggestions',
                 'Save unlimited looks',
+                '4 Google Shopping suggestions per outfit',
+                'Curated brand picks (coming soon)',
                 'New features first',
                 'Priority support',
               ].map((item) => (
@@ -166,6 +178,91 @@ export default function PricingPage() {
             <p className="mt-3 text-center text-[12px] text-[#8A8680]">
               🔒 Secure payment · Cancel anytime
             </p>
+          </div>
+        </section>
+
+        <div className="mx-auto mb-10 max-w-2xl">
+          <div className="flex items-start gap-4 rounded-2xl border border-[#E3DDCF] bg-[#F5F3EC] p-6">
+            <div className="flex-shrink-0 text-3xl">🛍️</div>
+            <div>
+              <h3 className="mb-1 text-base font-bold text-[#2A2A2A]">
+                Shop what&apos;s missing from your wardrobe
+              </h3>
+              <p className="text-sm leading-relaxed text-[#4E4E4E]">
+                After every outfit suggestion, StyleMyLook tells you exactly what
+                accessories or pieces would complete the look — with direct
+                Google Shopping links to find them. Free users get 2 suggestions
+                per outfit. Pro users get 4.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <section className="py-2">
+          <h2 className="mb-8 text-center text-[32px] font-bold text-[#2A2A2A]">
+            What&apos;s included
+          </h2>
+          <div className="mx-auto mb-16 max-w-2xl">
+            <div className="overflow-hidden rounded-2xl border border-[#E3DDCF] bg-white">
+              <div className="grid grid-cols-3 border-b border-[#E3DDCF] bg-[#F5F3EC] px-6 py-4">
+                <div className="text-sm font-semibold text-[#8A8680]">Feature</div>
+                <div className="text-center text-sm font-semibold text-[#2A2A2A]">
+                  Free
+                </div>
+                <div className="text-center text-sm font-semibold text-[#2A2A2A]">
+                  Pro
+                </div>
+              </div>
+              {[
+                { feature: 'Wardrobe items', free: 'Up to 50', pro: 'Unlimited' },
+                { feature: 'Outfit suggestions', free: '10 total', pro: 'Unlimited' },
+                { feature: 'AI styling', free: true, pro: true },
+                { feature: 'Save favourite looks', free: true, pro: true },
+                {
+                  feature: 'Google Shopping links',
+                  free: '2 per outfit',
+                  pro: '4 per outfit',
+                },
+                {
+                  feature: 'Curated brand picks',
+                  free: false,
+                  pro: 'Coming soon',
+                },
+                { feature: 'New features first', free: false, pro: true },
+                { feature: 'Priority support', free: false, pro: true },
+              ].map((row, i) => (
+                <div
+                  key={i}
+                  className={`grid grid-cols-3 border-b border-[#E3DDCF] px-6 py-4 last:border-0 ${
+                    i % 2 === 0 ? '' : 'bg-[#FAFAF8]'
+                  }`}
+                >
+                  <div className="text-sm font-medium text-[#2A2A2A]">
+                    {row.feature}
+                  </div>
+                  <div className="text-center">
+                    {row.free === true && (
+                      <span className="font-bold text-green-600">✓</span>
+                    )}
+                    {row.free === false && <span className="text-[#8A8680]">—</span>}
+                    {typeof row.free === 'string' && (
+                      <span className="text-sm text-[#4E4E4E]">{row.free}</span>
+                    )}
+                  </div>
+                  <div className="text-center">
+                    {row.pro === true && (
+                      <span className="font-bold text-green-600">✓</span>
+                    )}
+                    {row.pro === false && <span className="text-[#8A8680]">—</span>}
+                    {typeof row.pro === 'string' && (
+                      <span className="text-sm font-semibold text-[#2A2A2A]">
+                        {row.pro}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
