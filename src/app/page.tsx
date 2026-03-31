@@ -331,7 +331,7 @@ function StickyStep({ index, title, body, tags, mockup }: StickyStepProps) {
   return (
     <div
       ref={ref}
-      className="relative flex min-h-[60vh] items-center py-10 md:min-h-[70vh] md:py-14"
+      className="relative flex min-h-[50vh] items-center py-8 md:min-h-[60vh] md:py-10"
     >
       <div className="mx-auto grid w-full max-w-[1280px] grid-cols-1 items-start gap-16 px-6 md:grid-cols-2 md:px-12">
         <motion.div
@@ -716,15 +716,15 @@ function HowItWorksSection() {
   ]
 
   return (
-    <section ref={sectionRef} className="bg-[#F5F3EC] pt-12 pb-24 md:pt-16 md:pb-32">
+    <section ref={sectionRef} className="bg-[#F5F3EC] pt-10 pb-12 md:pt-14 md:pb-16">
       <div className="mx-auto max-w-[1280px] px-6 md:px-12">
-        <header className="pb-8 text-center md:pb-12">
+        <header className="pb-4 text-center md:pb-6">
           <p className="mb-4 text-[12px] font-bold uppercase tracking-[3px] text-[#8A8680]">
             HOW IT WORKS
           </p>
           <h2
-            className="mb-4 text-4xl font-bold leading-tight text-[#2A2A2A] md:text-5xl lg:text-[56px]"
-            style={{ maxWidth: '520px', margin: '0 auto 16px' }}
+            className="mb-3 text-[32px] font-bold leading-tight text-[#2A2A2A] md:text-[40px] lg:text-[48px]"
+            style={{ maxWidth: '640px', margin: '0 auto 12px' }}
           >
             From wardrobe to outfit in
             <br />
@@ -742,7 +742,7 @@ function HowItWorksSection() {
           <React.Fragment key={step.index}>
             <StickyStep {...step} />
             {idx < steps.length - 1 ? (
-              <div className="mx-auto h-8 w-px bg-[#E3DDCF]" aria-hidden />
+              <div className="mx-auto h-4 w-px bg-[#E3DDCF]" aria-hidden />
             ) : null}
           </React.Fragment>
         ))}
@@ -855,7 +855,7 @@ export default function HomePage() {
 
         <motion.section
           {...fadeUp}
-          className="mx-auto mb-8 mt-8 w-full max-w-[1280px]"
+          className="mx-auto mb-6 mt-4 w-full max-w-[1280px]"
         >
           <section
             style={{ backgroundColor: 'rgba(176, 173, 166, 0.3)' }}
