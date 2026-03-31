@@ -47,7 +47,7 @@ export default function PricingPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-[#F5F3EC]">
+    <main className="min-h-screen bg-[#F5F3EC]">
       {toast ? (
         <div className="fixed bottom-6 left-0 right-0 z-[100] flex justify-center px-4">
           <div className="rounded-xl bg-[#1C1C1C]/90 px-4 py-3 text-sm font-semibold text-white shadow-lg">
@@ -74,8 +74,8 @@ export default function PricingPage() {
         </div>
       </nav>
 
-      <section className="pt-16 text-center">
-        <div className="mx-auto max-w-[1280px] px-6 md:px-12">
+      <div className="mx-auto max-w-[1280px] px-6 md:px-12">
+        <section className="pt-16 text-center">
           <p className="mb-3 text-[12px] font-bold uppercase tracking-widest text-[#8A8680]">
             SIMPLE PRICING
           </p>
@@ -86,56 +86,54 @@ export default function PricingPage() {
             AI styles you from clothes you own — then finds what&apos;s missing on
             Google Shopping. Start free, upgrade when you&apos;re ready.
           </p>
-        </div>
-      </section>
+        </section>
 
-      <section className="mb-10 mt-10">
-        <div className="mx-auto max-w-[1280px] px-6 md:px-12">
+        <section className="mb-10 mt-10">
           <div className="mx-auto grid max-w-4xl grid-cols-1 gap-6 md:grid-cols-2">
             <div className="flex-1 rounded-2xl border border-[#E3DDCF] bg-white p-8">
-            <h2 className="text-[28px] font-bold text-[#2A2A2A]">Free</h2>
-            <div className="mt-3 flex items-end gap-2">
-              <span className="text-[48px] font-bold leading-none text-[#2A2A2A]">
-                ₹0
-              </span>
-              <span className="text-[16px] text-[#8A8680]">/forever</span>
-            </div>
-            <div className="my-6 border-t border-[#E3DDCF]" />
-            <ul className="space-y-3 text-sm">
-              {[
-                'Upload up to 50 wardrobe items',
-                '10 outfit suggestions',
-                'Save your favourite looks',
-                'AI-powered styling',
-                '2 Google Shopping suggestions per outfit',
-              ].map((item) => (
-                <li key={item} className="flex items-center gap-2 text-[#2A2A2A]">
-                  <Check className="h-4 w-4" />
-                  {item}
+              <h2 className="text-[28px] font-bold text-[#2A2A2A]">Free</h2>
+              <div className="mt-3 flex items-end gap-2">
+                <span className="text-[48px] font-bold leading-none text-[#2A2A2A]">
+                  ₹0
+                </span>
+                <span className="text-[16px] text-[#8A8680]">/forever</span>
+              </div>
+              <div className="my-6 border-t border-[#E3DDCF]" />
+              <ul className="space-y-3 text-sm">
+                {[
+                  'Upload up to 50 wardrobe items',
+                  '10 outfit suggestions',
+                  'Save your favourite looks',
+                  'AI-powered styling',
+                  '2 Google Shopping suggestions per outfit',
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-2 text-[#2A2A2A]">
+                    <Check className="h-4 w-4" />
+                    {item}
+                  </li>
+                ))}
+                <p className="ml-6 -mt-2 text-xs text-[#8A8680]">
+                  Pro gets 4 suggestions per outfit
+                </p>
+                <li className="flex items-center gap-2 text-[#8A8680] line-through">
+                  <X className="h-4 w-4" />
+                  Unlimited suggestions
                 </li>
-              ))}
-              <p className="ml-6 -mt-2 text-xs text-[#8A8680]">
-                Pro gets 4 suggestions per outfit
-              </p>
-              <li className="flex items-center gap-2 text-[#8A8680] line-through">
-                <X className="h-4 w-4" />
-                Unlimited suggestions
-              </li>
-              <li className="flex items-center gap-2 text-[#8A8680] line-through">
-                <X className="h-4 w-4" />
-                Unlimited wardrobe
-              </li>
-              <li className="flex items-center gap-2 text-[#8A8680] line-through">
-                <X className="h-4 w-4" />
-                More shopping suggestions
-              </li>
-            </ul>
-            <button
-              type="button"
-              className="mt-6 w-full cursor-default rounded-full border border-[#E3DDCF] py-3 text-[#8A8680]"
-            >
-              Current plan
-            </button>
+                <li className="flex items-center gap-2 text-[#8A8680] line-through">
+                  <X className="h-4 w-4" />
+                  Unlimited wardrobe
+                </li>
+                <li className="flex items-center gap-2 text-[#8A8680] line-through">
+                  <X className="h-4 w-4" />
+                  More shopping suggestions
+                </li>
+              </ul>
+              <button
+                type="button"
+                className="mt-6 w-full cursor-default rounded-full border border-[#E3DDCF] py-3 text-[#8A8680]"
+              >
+                Current plan
+              </button>
             </div>
 
             <div className="relative flex-1 rounded-2xl border-2 border-[#2A2A2A] bg-[#2A2A2A] p-8">
@@ -170,14 +168,23 @@ export default function PricingPage() {
                 </li>
               ))}
             </ul>
-            <div className="mb-5 mt-4 rounded-xl border border-white/20 bg-white/10 p-4">
+            <div
+              className="mb-5 mt-4 rounded-xl p-4"
+              style={{
+                backgroundColor: 'rgba(255,255,255,0.15)',
+                border: '1px solid rgba(255,255,255,0.25)',
+              }}
+            >
               <div className="flex items-start gap-3">
                 <span className="flex-shrink-0 text-2xl">🛍️</span>
                 <div>
-                  <p className="mb-1 text-sm font-semibold text-white">
+                  <p className="mb-1 text-sm font-semibold" style={{ color: '#FFFFFF' }}>
                     Shop what&apos;s missing from your look
                   </p>
-                  <p className="text-xs leading-relaxed text-white/60">
+                  <p
+                    className="text-xs leading-relaxed"
+                    style={{ color: 'rgba(255,255,255,0.75)' }}
+                  >
                     After every outfit, AI tells you exactly what accessories
                     would complete it — with direct Google Shopping links. Pro
                     gets 4 suggestions per outfit vs 2 on Free.
@@ -196,28 +203,30 @@ export default function PricingPage() {
             >
               Upgrade to Pro →
             </button>
-            <p className="mt-3 text-center text-[12px] text-[#8A8680]">
+            <p
+              className="mt-3 text-center text-xs"
+              style={{ color: 'rgba(255,255,255,0.6)' }}
+            >
               🔒 Secure payment · Cancel anytime
             </p>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="mt-10 py-2">
-        <div className="mx-auto max-w-[1280px] px-6 md:px-12">
+        <section className="mt-10 py-12">
           <h2 className="mb-8 text-center text-[32px] font-bold text-[#2A2A2A]">
             What&apos;s included
           </h2>
-          <div className="mx-auto mb-16 max-w-2xl">
-            <div className="overflow-hidden rounded-2xl border border-[#E3DDCF] bg-white">
-              <div className="grid grid-cols-3 border-b border-[#E3DDCF] bg-[#F5F3EC] px-6 py-4">
+          <div className="overflow-x-auto">
+            <div className="min-w-[600px]">
+              <div className="w-full overflow-hidden rounded-2xl border border-[#E3DDCF] bg-white">
+                <div className="grid grid-cols-[1fr_160px_160px] border-b border-[#E3DDCF] bg-[#F5F3EC] px-6 py-4 md:grid-cols-[1fr_200px_200px] md:px-10">
                 <div className="text-sm font-semibold text-[#8A8680]">Feature</div>
-                <div className="text-center text-sm font-semibold text-[#2A2A2A]">
+                <div className="text-center text-sm font-bold text-[#2A2A2A]">
                   Free
                 </div>
-                <div className="text-center text-sm font-semibold text-[#2A2A2A]">
-                  Pro
+                <div className="text-center text-sm font-bold text-[#2A2A2A]">
+                  Pro ✨
                 </div>
               </div>
               {[
@@ -240,7 +249,7 @@ export default function PricingPage() {
               ].map((row, i) => (
                 <div
                   key={i}
-                  className={`grid grid-cols-3 border-b border-[#E3DDCF] px-6 py-4 last:border-0 ${
+                  className={`grid grid-cols-[1fr_160px_160px] border-b border-[#E3DDCF] px-6 py-4 last:border-0 md:grid-cols-[1fr_200px_200px] md:px-10 ${
                     i % 2 === 0 ? '' : 'bg-[#FAFAF8]'
                   }`}
                 >
@@ -271,11 +280,10 @@ export default function PricingPage() {
               ))}
             </div>
           </div>
-        </div>
-      </section>
+          </div>
+        </section>
 
-      <section className="py-12">
-        <div className="mx-auto max-w-[1280px] px-6 md:px-12">
+        <section className="py-12">
           <div className="grid grid-cols-1 gap-6 text-center md:grid-cols-3">
             <div className="flex flex-col items-center">
               <span className="text-[32px]">🔒</span>
@@ -305,53 +313,51 @@ export default function PricingPage() {
               </p>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="mt-10 py-12">
-        <div className="mx-auto max-w-[1280px] px-6 md:px-12">
-          <div className="mx-auto max-w-2xl">
-          <h2 className="mb-8 text-center text-[32px] font-bold text-[#2A2A2A]">
-            Frequently asked questions
-          </h2>
-          {faqs.map((faq, i) => (
-            <div key={faq.q} className="border-b border-[#E3DDCF]">
-              <button
-                onClick={() => setOpenIndex(openIndex === i ? null : i)}
-                className="flex w-full items-center justify-between py-5 text-left"
-              >
-                <span className="pr-4 text-base font-semibold text-[#2A2A2A]">
-                  {faq.q}
-                </span>
-                <ChevronDown
-                  className={`h-5 w-5 flex-shrink-0 text-[#8A8680] transition-transform ${
-                    openIndex === i ? 'rotate-180' : ''
-                  }`}
-                />
-              </button>
-              <AnimatePresence initial={false}>
-                {openIndex === i ? (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="pb-5"
+        <section className="mt-10 py-12">
+          <div className="w-full rounded-2xl border border-[#E3DDCF] bg-white p-8 md:p-12">
+            <h2 className="mb-10 text-center text-3xl font-bold text-[#2A2A2A]">
+              Frequently asked questions
+            </h2>
+            <div className="mx-auto max-w-3xl">
+              {faqs.map((faq, i) => (
+                <div key={faq.q} className="border-b border-[#E3DDCF]">
+                  <button
+                    onClick={() => setOpenIndex(openIndex === i ? null : i)}
+                    className="flex w-full items-center justify-between py-5 text-left"
                   >
-                    <p className="text-base leading-relaxed text-[#4E4E4E]">
-                      {faq.a}
-                    </p>
-                  </motion.div>
-                ) : null}
-              </AnimatePresence>
+                    <span className="pr-4 text-base font-semibold text-[#2A2A2A]">
+                      {faq.q}
+                    </span>
+                    <ChevronDown
+                      className={`h-5 w-5 flex-shrink-0 text-[#8A8680] transition-transform ${
+                        openIndex === i ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {openIndex === i ? (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="pb-5"
+                      >
+                        <p className="text-base leading-relaxed text-[#4E4E4E]">
+                          {faq.a}
+                        </p>
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
+                </div>
+              ))}
             </div>
-          ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="mb-8 mt-10 py-12">
-        <div className="mx-auto max-w-[1280px] px-6 md:px-12">
-          <div className="mx-auto max-w-2xl rounded-2xl border border-[#E3DDCF] bg-white p-8 text-center md:p-12">
+        <section className="mb-8 mt-10 py-12">
+          <div className="w-full rounded-2xl border border-[#E3DDCF] bg-white p-8 text-center md:p-12">
             <p className="mb-4 text-4xl">💬</p>
             <h3 className="text-[24px] font-bold text-[#2A2A2A]">
               Still have questions?
@@ -376,8 +382,8 @@ export default function PricingPage() {
               </a>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       <footer className="border-t border-[#E3DDCF] py-6 text-center text-sm text-[#8A8680]">
         © 2025 StyleMyLook ·{' '}
@@ -394,7 +400,7 @@ export default function PricingPage() {
           Instagram
         </a>
       </footer>
-    </div>
+    </main>
   )
 }
 
