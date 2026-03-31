@@ -18,6 +18,10 @@ export default function AppGroupLayout({ children }: { children: ReactNode }) {
   )
 
   const [showUpgradeNudge, setShowUpgradeNudge] = useState(false)
+  const [usagePercent, setUsagePercent] = useState<number | null>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [profileName, setProfileName] = useState<string | null>(null)
+  const [profileEmail, setProfileEmail] = useState<string | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -28,22 +32,32 @@ export default function AppGroupLayout({ children }: { children: ReactNode }) {
       } = await supabase.auth.getUser()
       if (!user) return
 
+      setProfileEmail(user.email ?? null)
+
       const { data: profile } = await supabase
         .from('profiles')
-        .select('plan, suggestions_count, wardrobe_count')
+        .select('plan, suggestions_count, wardrobe_count, avatar_url, full_name')
         .eq('id', user.id)
         .maybeSingle()
 
       if (!profile) return
 
+      setAvatarUrl(profile.avatar_url ?? null)
+      setProfileName(profile.full_name ?? null)
+
       const suggestionsUsedPercent =
         ((profile.suggestions_count ?? 0) / 10) * 100
       const wardrobeUsedPercent = ((profile.wardrobe_count ?? 0) / 50) * 100
+      const combined = Math.round(
+        (suggestionsUsedPercent + wardrobeUsedPercent) / 2
+      )
+
       const shouldNudge =
         profile.plan === 'free' &&
         (suggestionsUsedPercent >= 80 || wardrobeUsedPercent >= 80)
 
       setShowUpgradeNudge(shouldNudge)
+      setUsagePercent(combined)
     }
 
     void load()
@@ -58,9 +72,24 @@ export default function AppGroupLayout({ children }: { children: ReactNode }) {
         !hideNav && 'md:pt-16'
       )}
     >
-      {!hideNav ? <TopNav showUpgradeNudge={showUpgradeNudge} /> : null}
+      {!hideNav ? (
+        <TopNav
+          showUpgradeNudge={showUpgradeNudge}
+          usagePercent={usagePercent ?? 0}
+          avatarUrl={avatarUrl}
+          profileName={profileName}
+          profileEmail={profileEmail}
+        />
+      ) : null}
       {children}
-      {!hideNav ? <BottomNav showUpgradeNudge={showUpgradeNudge} /> : null}
+      {!hideNav ? (
+        <BottomNav
+          showUpgradeNudge={showUpgradeNudge}
+          avatarUrl={avatarUrl}
+          profileName={profileName}
+          profileEmail={profileEmail}
+        />
+      ) : null}
     </div>
   )
 }

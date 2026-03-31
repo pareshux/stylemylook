@@ -2,22 +2,46 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Bookmark, Shirt, User, type LucideIcon } from 'lucide-react'
+import { Bookmark, Home, Shirt, type LucideIcon } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 
 const tabs: ReadonlyArray<
-  | { href: string; label: string; logo: true }
-  | { href: string; label: string; logo: false; Icon: LucideIcon }
+  | { href: string; label: string; type: 'home' }
+  | { href: string; label: string; type: 'wardrobe' | 'saved'; Icon: LucideIcon }
+  | { href: string; label: string; type: 'profile' }
 > = [
-  { href: '/home', label: 'Home', logo: true },
-  { href: '/wardrobe', label: 'Wardrobe', logo: false, Icon: Shirt },
-  { href: '/saved', label: 'Fav Looks', logo: false, Icon: Bookmark },
-  { href: '/profile', label: 'Profile', logo: false, Icon: User },
+  { href: '/home', label: 'Home', type: 'home' },
+  { href: '/wardrobe', label: 'Wardrobe', type: 'wardrobe', Icon: Shirt },
+  { href: '/saved', label: 'Fav Looks', type: 'saved', Icon: Bookmark },
+  { href: '/profile', label: 'Profile', type: 'profile' },
 ]
 
-export function BottomNav({ showUpgradeNudge = false }: { showUpgradeNudge?: boolean }) {
+type BottomNavProps = {
+  showUpgradeNudge?: boolean
+  avatarUrl?: string | null
+  profileName?: string | null
+  profileEmail?: string | null
+}
+
+function initialsFromProfile(
+  profileName?: string | null,
+  profileEmail?: string | null
+) {
+  const source = profileName || profileEmail || ''
+  const trimmed = source.trim()
+  if (!trimmed) return '?'
+  return trimmed.charAt(0).toUpperCase()
+}
+
+export function BottomNav({
+  showUpgradeNudge = false,
+  avatarUrl,
+  profileName,
+  profileEmail,
+}: BottomNavProps) {
   const pathname = usePathname()
+  const initials = initialsFromProfile(profileName, profileEmail)
 
   return (
     <nav
@@ -27,7 +51,6 @@ export function BottomNav({ showUpgradeNudge = false }: { showUpgradeNudge?: boo
       <div className="mx-auto flex min-h-[72px] max-w-sm items-stretch justify-around px-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1">
         {tabs.map((tab) => {
           const { href, label } = tab
-          const NavIcon = tab.logo ? null : tab.Icon
           const active =
             href === '/home'
               ? pathname === '/home'
@@ -43,25 +66,33 @@ export function BottomNav({ showUpgradeNudge = false }: { showUpgradeNudge?: boo
                 active ? activeClass : inactiveClass
               )}
             >
-              {NavIcon == null ? (
-                <img
-                  src="https://eqwqddsgvxrpksvptlmx.supabase.co/storage/v1/object/public/assets/stylemylook_logo.svg"
-                  alt="StyleMyLook"
-                  className={cn(
-                    'h-6 w-auto',
-                    active ? 'opacity-100' : 'opacity-55'
-                  )}
-                  aria-hidden
-                />
+              {tab.type === 'home' ? (
+                <Home className="size-6 shrink-0 stroke-[1.75]" aria-hidden />
+              ) : tab.type === 'profile' ? (
+                <div className="relative flex items-center justify-center">
+                  <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full border-2 border-[#E3DDCF] bg-[#2A2A2A]">
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt={label}
+                        className="h-full w-full rounded-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-[11px] font-semibold text-white">
+                        {initials}
+                      </span>
+                    )}
+                  </div>
+                  {showUpgradeNudge ? (
+                    <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-red-500" />
+                  ) : null}
+                </div>
               ) : (
                 <div className="relative flex items-center justify-center">
-                  <NavIcon
+                  <tab.Icon
                     className="size-6 shrink-0 stroke-[1.75]"
                     aria-hidden
                   />
-                  {tab.href === '/profile' && showUpgradeNudge ? (
-                    <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-red-500" />
-                  ) : null}
                 </div>
               )}
               {label}

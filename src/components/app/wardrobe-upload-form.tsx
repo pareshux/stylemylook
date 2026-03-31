@@ -84,6 +84,12 @@ export function WardrobeUploadForm({
     }) => {
       await ensureProfileRow(args.userId)
 
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('wardrobe_count')
+        .eq('id', args.userId)
+        .maybeSingle()
+
       const { data, error } = await supabase
         .from('wardrobe_items')
         .insert({
@@ -96,6 +102,12 @@ export function WardrobeUploadForm({
 
       const id = data?.[0]?.id
       if (!error && id) {
+        const current = existingProfile?.wardrobe_count ?? 0
+        await supabase
+          .from('profiles')
+          .update({ wardrobe_count: current + 1 })
+          .eq('id', args.userId)
+
         return { itemId: id, error: null as string | null }
       }
 
