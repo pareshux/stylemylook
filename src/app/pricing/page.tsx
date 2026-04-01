@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Check, ChevronDown, X } from 'lucide-react'
 
 export default function PricingPage() {
+  const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly')
   const [openIndex, setOpenIndex] = useState<number | null>(null)
   const [toast, setToast] = useState<string | null>(null)
 
@@ -16,6 +17,18 @@ export default function PricingPage() {
   }, [toast])
 
   const faqs = [
+    {
+      q: "What's the difference between Pro and Premium?",
+      a: 'Pro is perfect for most users — 150 wardrobe items and 30 suggestions a month covers everything. Premium is for serious fashion lovers who want unlimited everything, plus the Shopping Scanner and curated brand picks when they launch.',
+    },
+    {
+      q: 'How does the yearly discount work?',
+      a: 'Pay annually and save 20% vs monthly. Pro yearly is ₹1,910 (₹159/month) and Premium yearly is ₹3,830 (₹319/month). Yearly plans are billed once upfront.',
+    },
+    {
+      q: 'Why is it priced in rupees?',
+      a: 'StyleMyLook is built in India, for India. We price in INR, support UPI and Indian cards, and we understand what feels affordable for our audience. No dollar conversions, no surprises.',
+    },
     {
       q: 'How do Google Shopping suggestions work?',
       a: "After each outfit suggestion, our AI identifies what's missing from your wardrobe to complete the look — things like shoes, a bag, or jewellery. We then generate direct Google Shopping links so you can find and buy exactly what you need. Free users get 2 suggestions per outfit, Pro users get 4.",
@@ -80,17 +93,50 @@ export default function PricingPage() {
             SIMPLE PRICING
           </p>
           <h1 className="text-[48px] font-bold leading-tight text-[#2A2A2A] md:text-[56px]">
-            One plan. Unlimited style.
+            Three plans. One goal.
           </h1>
           <p className="mt-3 text-[18px] text-[#4E4E4E]">
-            AI styles you from clothes you own — then finds what&apos;s missing on
-            Google Shopping. Start free, upgrade when you&apos;re ready.
+            Three plans. One goal — dress better every day. Start free, upgrade
+            when you&apos;re ready.
           </p>
         </section>
 
+        <section className="mt-8 flex justify-center">
+          <div className="inline-flex items-center rounded-full bg-[#E3DDCF] p-1">
+            <button
+              type="button"
+              onClick={() => setBilling('monthly')}
+              className={`rounded-full px-5 py-2 text-sm ${
+                billing === 'monthly'
+                  ? 'bg-white font-semibold text-[#2A2A2A] shadow-sm'
+                  : 'font-medium text-[#8A8680]'
+              }`}
+            >
+              Monthly
+            </button>
+            <button
+              type="button"
+              onClick={() => setBilling('yearly')}
+              className={`rounded-full px-5 py-2 text-sm ${
+                billing === 'yearly'
+                  ? 'bg-white font-semibold text-[#2A2A2A] shadow-sm'
+                  : 'font-medium text-[#8A8680]'
+              }`}
+            >
+              Yearly
+            </button>
+            <span className="ml-2 rounded-full bg-[#EAF3DE] px-2 py-0.5 text-xs font-bold text-[#27500A]">
+              Save 20%
+            </span>
+          </div>
+        </section>
+
         <section className="mb-10 mt-10">
-          <div className="mx-auto grid max-w-4xl grid-cols-1 gap-6 md:grid-cols-2">
-            <div className="flex-1 rounded-2xl border border-[#E3DDCF] bg-white p-8">
+          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-5 md:grid-cols-3">
+            <div className="flex-1 rounded-2xl border border-[#E3DDCF] bg-white p-7">
+              <span className="mb-4 inline-flex rounded-full bg-[#F5F3EC] px-3 py-1 text-xs text-[#4E4E4E]">
+                Closet Starter
+              </span>
               <h2 className="text-[28px] font-bold text-[#2A2A2A]">Free</h2>
               <div className="mt-3 flex items-end gap-2">
                 <span className="text-[48px] font-bold leading-none text-[#2A2A2A]">
@@ -98,11 +144,14 @@ export default function PricingPage() {
                 </span>
                 <span className="text-[16px] text-[#8A8680]">/forever</span>
               </div>
+              <p className="mb-6 mt-1 text-[13px] text-[#8A8680]">
+                Perfect to get started
+              </p>
               <div className="my-6 border-t border-[#E3DDCF]" />
               <ul className="space-y-3 text-sm">
                 {[
-                  'Upload up to 50 wardrobe items',
-                  '10 outfit suggestions',
+                  'Upload up to 30 wardrobe items',
+                  '5 outfit suggestions/month',
                   'Save your favourite looks',
                   'AI-powered styling',
                   '2 Google Shopping suggestions per outfit',
@@ -125,44 +174,116 @@ export default function PricingPage() {
                 </li>
                 <li className="flex items-center gap-2 text-[#8A8680] line-through">
                   <X className="h-4 w-4" />
-                  More shopping suggestions
+                  Shopping Scanner
                 </li>
               </ul>
               <button
                 type="button"
-                className="mt-6 w-full cursor-default rounded-full border border-[#E3DDCF] py-3 text-[#8A8680]"
+                className="mt-6 w-full rounded-full border border-[#E3DDCF] py-3 text-[#8A8680] transition-colors hover:border-[#2A2A2A] hover:text-[#2A2A2A]"
               >
-                Current plan
+                Get started free
               </button>
             </div>
 
-            <div className="relative flex-1 rounded-2xl border-2 border-[#2A2A2A] bg-[#2A2A2A] p-8">
+            <div className="relative flex-1 rounded-2xl border border-[#E3DDCF] bg-white p-7">
+              <span className="mb-4 inline-flex rounded-full bg-[#F5F3EC] px-3 py-1 text-xs text-[#4E4E4E]">
+                Wardrobe Goals
+              </span>
+              <h2 className="text-[28px] font-bold text-[#2A2A2A]">Premium</h2>
+              <div className="mt-3 flex items-end gap-2">
+                <span className="text-[48px] font-bold leading-none text-[#2A2A2A]">
+                  {billing === 'monthly' ? '₹399' : '₹319'}
+                </span>
+                <span className="text-[16px] text-[#8A8680]">/month</span>
+              </div>
+              {billing === 'yearly' ? (
+                <p className="mt-1 text-[12px] text-[#8A8680]">₹3,830 billed yearly</p>
+              ) : null}
+              <p className="mb-6 mt-1 text-[13px] text-[#8A8680]">
+                For the true fashion lover
+              </p>
+              <p className="text-[11px] text-[#8A8680]">Less than one impulse buy 🛍️</p>
+              <div className="mb-6 mt-6 border-t border-[#E3DDCF]" />
+              <ul className="space-y-3 text-sm">
+                {[
+                  'Everything in Pro',
+                  'Unlimited wardrobe items',
+                  'Unlimited outfit suggestions',
+                  'Shopping Scanner (coming soon) 🛍️',
+                  'Curated brand picks (coming soon)',
+                  'Annual wardrobe audit',
+                  'Early access to all features',
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-2 text-[#2A2A2A]">
+                    <Check className="h-4 w-4" />
+                    {item.includes('coming soon') ? (
+                      <>
+                        {item.replace(' (coming soon)', '')}
+                        <span className="ml-1 rounded-full bg-[#F5F3EC] px-2 py-0.5 text-[10px] text-[#8A8680]">
+                          Coming soon
+                        </span>
+                      </>
+                    ) : (
+                      item
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <button
+                type="button"
+                onClick={() =>
+                  setToast("Coming soon! We'll notify you when payments are live.")
+                }
+                className="mt-6 w-full rounded-full bg-[#2A2A2A] py-3 text-base font-bold text-white transition-colors hover:bg-[#404040]"
+              >
+                Upgrade to Premium →
+              </button>
+            </div>
+
+            <div className="relative flex-1 rounded-2xl border-2 border-[#2A2A2A] bg-[#2A2A2A] p-7 md:-my-2 md:scale-105">
             <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-[#E3DDCF] px-4 py-1.5 text-xs font-bold text-[#2A2A2A]">
               Most popular
+            </span>
+            <span className="mb-4 inline-flex rounded-full bg-white/10 px-3 py-1 text-xs text-white/70">
+              Style Bestie
             </span>
             <h2 className="text-[28px] font-bold text-white">Pro</h2>
             <div className="mt-3 flex items-end gap-2">
               <span className="text-[48px] font-bold leading-none text-white">
-                ₹299
+                {billing === 'monthly' ? '₹199' : '₹159'}
               </span>
               <span className="text-[16px] text-[#8A8680]">/month</span>
             </div>
+            {billing === 'yearly' ? (
+              <p className="mt-1 text-[12px] text-white/50">₹1,910 billed yearly</p>
+            ) : null}
             <p className="mt-1 text-[13px] text-[#8A8680]">
               Billed monthly. Cancel anytime.
             </p>
+            <p className="mt-1 text-[13px] text-white/60">
+              Less than your last Zomato order 🍕
+            </p>
+            <p className="mt-1 text-[11px] text-white/50">Less than a coffee a week ☕</p>
             <div className="my-6 border-t border-white/10" />
             <ul className="space-y-3 text-sm text-white">
               {[
                 'Everything in Free',
-                'Unlimited wardrobe items',
-                'Unlimited outfit suggestions',
+                'Upload up to 150 wardrobe items',
+                '30 outfit suggestions/month',
                 'Save unlimited looks',
                 '4 Google Shopping suggestions per outfit',
-                'Curated brand picks (coming soon)',
                 'New features first',
                 'Priority support',
+                'Unlimited everything',
               ].map((item) => (
-                <li key={item} className="flex items-center gap-2">
+                <li
+                  key={item}
+                  className={`flex items-center gap-2 ${
+                    item === 'Unlimited everything'
+                      ? 'text-white/40 line-through'
+                      : ''
+                  }`}
+                >
                   <Check className="h-4 w-4" />
                   {item}
                 </li>
@@ -220,7 +341,7 @@ export default function PricingPage() {
           <div className="overflow-x-auto">
             <div className="min-w-[600px]">
               <div className="w-full overflow-hidden rounded-2xl border border-[#E3DDCF] bg-white">
-                <div className="grid grid-cols-[1fr_160px_160px] border-b border-[#E3DDCF] bg-[#F5F3EC] px-6 py-4 md:grid-cols-[1fr_200px_200px] md:px-10">
+                <div className="grid grid-cols-[1fr_120px_120px_120px] border-b border-[#E3DDCF] bg-[#F5F3EC] px-6 py-4 md:grid-cols-[1fr_160px_160px_160px] md:px-10">
                 <div className="text-sm font-semibold text-[#8A8680]">Feature</div>
                 <div className="text-center text-sm font-bold text-[#2A2A2A]">
                   Free
@@ -228,28 +349,40 @@ export default function PricingPage() {
                 <div className="text-center text-sm font-bold text-[#2A2A2A]">
                   Pro ✨
                 </div>
+                <div className="text-center text-sm font-bold text-[#2A2A2A]">
+                  Premium
+                </div>
               </div>
               {[
-                { feature: 'Wardrobe items', free: 'Up to 50', pro: 'Unlimited' },
-                { feature: 'Outfit suggestions', free: '10 total', pro: 'Unlimited' },
-                { feature: 'AI styling', free: true, pro: true },
-                { feature: 'Save favourite looks', free: true, pro: true },
+                { feature: 'Wardrobe items', free: '30 items', pro: '150 items', premium: 'Unlimited' },
+                { feature: 'Suggestions/month', free: '5', pro: '30', premium: 'Unlimited' },
+                { feature: 'AI styling', free: true, pro: true, premium: true },
+                { feature: 'Save favourite looks', free: true, pro: true, premium: true },
                 {
                   feature: 'Google Shopping links',
-                  free: '2 per outfit',
-                  pro: '4 per outfit',
+                  free: '2/outfit',
+                  pro: '4/outfit',
+                  premium: '4/outfit',
+                },
+                {
+                  feature: 'Shopping Scanner',
+                  free: false,
+                  pro: false,
+                  premium: 'Coming soon',
                 },
                 {
                   feature: 'Curated brand picks',
                   free: false,
-                  pro: 'Coming soon',
+                  pro: false,
+                  premium: 'Coming soon',
                 },
-                { feature: 'New features first', free: false, pro: true },
-                { feature: 'Priority support', free: false, pro: true },
+                { feature: 'New features first', free: false, pro: true, premium: true },
+                { feature: 'Priority support', free: false, pro: true, premium: true },
+                { feature: 'Annual wardrobe audit', free: false, pro: false, premium: 'Coming soon' },
               ].map((row, i) => (
                 <div
                   key={i}
-                  className={`grid grid-cols-[1fr_160px_160px] border-b border-[#E3DDCF] px-6 py-4 last:border-0 md:grid-cols-[1fr_200px_200px] md:px-10 ${
+                  className={`grid grid-cols-[1fr_120px_120px_120px] border-b border-[#E3DDCF] px-6 py-4 last:border-0 md:grid-cols-[1fr_160px_160px_160px] md:px-10 ${
                     i % 2 === 0 ? '' : 'bg-[#FAFAF8]'
                   }`}
                 >
@@ -273,6 +406,17 @@ export default function PricingPage() {
                     {typeof row.pro === 'string' && (
                       <span className="text-sm font-semibold text-[#2A2A2A]">
                         {row.pro}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-center">
+                    {row.premium === true && (
+                      <span className="font-bold text-green-600">✓</span>
+                    )}
+                    {row.premium === false && <span className="text-[#8A8680]">—</span>}
+                    {typeof row.premium === 'string' && (
+                      <span className="text-sm font-semibold text-[#2A2A2A]">
+                        {row.premium}
                       </span>
                     )}
                   </div>
