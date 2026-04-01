@@ -185,61 +185,6 @@ export default function PricingPage() {
               </button>
             </div>
 
-            <div className="relative flex-1 rounded-2xl border border-[#E3DDCF] bg-white p-7">
-              <span className="mb-4 inline-flex rounded-full bg-[#F5F3EC] px-3 py-1 text-xs text-[#4E4E4E]">
-                Wardrobe Goals
-              </span>
-              <h2 className="text-[28px] font-bold text-[#2A2A2A]">Premium</h2>
-              <div className="mt-3 flex items-end gap-2">
-                <span className="text-[48px] font-bold leading-none text-[#2A2A2A]">
-                  {billing === 'monthly' ? '₹399' : '₹319'}
-                </span>
-                <span className="text-[16px] text-[#8A8680]">/month</span>
-              </div>
-              {billing === 'yearly' ? (
-                <p className="mt-1 text-[12px] text-[#8A8680]">₹3,830 billed yearly</p>
-              ) : null}
-              <p className="mb-6 mt-1 text-[13px] text-[#8A8680]">
-                For the true fashion lover
-              </p>
-              <p className="text-[11px] text-[#8A8680]">Less than one impulse buy 🛍️</p>
-              <div className="mb-6 mt-6 border-t border-[#E3DDCF]" />
-              <ul className="space-y-3 text-sm">
-                {[
-                  'Everything in Pro',
-                  'Unlimited wardrobe items',
-                  'Unlimited outfit suggestions',
-                  'Shopping Scanner (coming soon) 🛍️',
-                  'Curated brand picks (coming soon)',
-                  'Annual wardrobe audit',
-                  'Early access to all features',
-                ].map((item) => (
-                  <li key={item} className="flex items-center gap-2 text-[#2A2A2A]">
-                    <Check className="h-4 w-4" />
-                    {item.includes('coming soon') ? (
-                      <>
-                        {item.replace(' (coming soon)', '')}
-                        <span className="ml-1 rounded-full bg-[#F5F3EC] px-2 py-0.5 text-[10px] text-[#8A8680]">
-                          Coming soon
-                        </span>
-                      </>
-                    ) : (
-                      item
-                    )}
-                  </li>
-                ))}
-              </ul>
-              <button
-                type="button"
-                onClick={() =>
-                  setToast("Coming soon! We'll notify you when payments are live.")
-                }
-                className="mt-6 w-full rounded-full bg-[#2A2A2A] py-3 text-base font-bold text-white transition-colors hover:bg-[#404040]"
-              >
-                Upgrade to Premium →
-              </button>
-            </div>
-
             <div className="relative flex-1 rounded-2xl border-2 border-[#2A2A2A] bg-[#2A2A2A] p-7 md:-my-2 md:scale-105">
             <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-[#E3DDCF] px-4 py-1.5 text-xs font-bold text-[#2A2A2A]">
               Most popular
@@ -257,13 +202,13 @@ export default function PricingPage() {
             {billing === 'yearly' ? (
               <p className="mt-1 text-[12px] text-white/50">₹1,910 billed yearly</p>
             ) : null}
-            <p className="mt-1 text-[13px] text-[#8A8680]">
+            <p className="mt-1 text-[13px] text-white/70">
               Billed monthly. Cancel anytime.
             </p>
-            <p className="mt-1 text-[13px] text-white/60">
+            <p className="mt-1 text-[13px] text-white/85">
               Less than your last Zomato order 🍕
             </p>
-            <p className="mt-1 text-[11px] text-white/50">Less than a coffee a week ☕</p>
+            <p className="mt-1 text-[11px] text-white/75">Less than a coffee a week ☕</p>
             <div className="my-6 border-t border-white/10" />
             <ul className="space-y-3 text-sm text-white">
               {[
@@ -330,6 +275,61 @@ export default function PricingPage() {
             >
               🔒 Secure payment · Cancel anytime
             </p>
+            </div>
+
+            <div className="relative flex-1 rounded-2xl border border-[#E3DDCF] bg-white p-7">
+              <span className="mb-4 inline-flex rounded-full bg-[#F5F3EC] px-3 py-1 text-xs text-[#4E4E4E]">
+                Wardrobe Goals
+              </span>
+              <h2 className="text-[28px] font-bold text-[#2A2A2A]">Premium</h2>
+              <div className="mt-3 flex items-end gap-2">
+                <span className="text-[48px] font-bold leading-none text-[#2A2A2A]">
+                  {billing === 'monthly' ? '₹399' : '₹319'}
+                </span>
+                <span className="text-[16px] text-[#8A8680]">/month</span>
+              </div>
+              {billing === 'yearly' ? (
+                <p className="mt-1 text-[12px] text-[#8A8680]">₹3,830 billed yearly</p>
+              ) : null}
+              <p className="mb-6 mt-1 text-[13px] text-[#8A8680]">
+                For the true fashion lover
+              </p>
+              <p className="text-[11px] text-[#8A8680]">Less than one impulse buy 🛍️</p>
+              <div className="mb-6 mt-6 border-t border-[#E3DDCF]" />
+              <ul className="space-y-3 text-sm">
+                {[
+                  'Everything in Pro',
+                  'Unlimited wardrobe items',
+                  'Unlimited outfit suggestions',
+                  'Shopping Scanner (coming soon) 🛍️',
+                  'Curated brand picks (coming soon)',
+                  'Annual wardrobe audit',
+                  'Early access to all features',
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-2 text-[#2A2A2A]">
+                    <Check className="h-4 w-4" />
+                    {item.includes('coming soon') ? (
+                      <>
+                        {item.replace(' (coming soon)', '')}
+                        <span className="ml-1 rounded-full bg-[#F5F3EC] px-2 py-0.5 text-[10px] text-[#8A8680]">
+                          Coming soon
+                        </span>
+                      </>
+                    ) : (
+                      item
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <button
+                type="button"
+                onClick={() =>
+                  setToast("Coming soon! We'll notify you when payments are live.")
+                }
+                className="mt-6 w-full rounded-full bg-[#2A2A2A] py-3 text-base font-bold text-white transition-colors hover:bg-[#404040]"
+              >
+                Upgrade to Premium →
+              </button>
             </div>
           </div>
         </section>
