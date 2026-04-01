@@ -200,15 +200,15 @@ export default function PricingPage() {
               <span className="text-[16px] text-[#8A8680]">/month</span>
             </div>
             {billing === 'yearly' ? (
-              <p className="mt-1 text-[12px] text-white/50">₹1,910 billed yearly</p>
+              <p className="mt-1 text-[12px] text-white">₹1,910 billed yearly</p>
             ) : null}
-            <p className="mt-1 text-[13px] text-white/70">
+            <p className="mt-1 text-[13px] text-white">
               Billed monthly. Cancel anytime.
             </p>
-            <p className="mt-1 text-[13px] text-white/85">
+            <p className="mt-1 text-[13px] text-white">
               Less than your last Zomato order 🍕
             </p>
-            <p className="mt-1 text-[11px] text-white/75">Less than a coffee a week ☕</p>
+            <p className="mt-1 text-[11px] text-white">Less than a coffee a week ☕</p>
             <div className="my-6 border-t border-white/10" />
             <ul className="space-y-3 text-sm text-white">
               {[
