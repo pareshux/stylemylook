@@ -101,38 +101,47 @@ export default function PricingPage() {
           </p>
         </section>
 
-        <section className="mt-8 flex justify-center">
-          <div className="inline-flex items-center rounded-full bg-[#E3DDCF] p-1">
-            <button
-              type="button"
-              onClick={() => setBilling('monthly')}
-              className={`rounded-full px-5 py-2 text-sm ${
-                billing === 'monthly'
-                  ? 'bg-white font-semibold text-[#2A2A2A] shadow-sm'
-                  : 'font-medium text-[#8A8680]'
-              }`}
-            >
-              Monthly
-            </button>
-            <button
-              type="button"
-              onClick={() => setBilling('yearly')}
-              className={`rounded-full px-5 py-2 text-sm ${
-                billing === 'yearly'
-                  ? 'bg-white font-semibold text-[#2A2A2A] shadow-sm'
-                  : 'font-medium text-[#8A8680]'
-              }`}
-            >
-              Yearly
-            </button>
-            <span className="ml-2 rounded-full bg-[#EAF3DE] px-2 py-0.5 text-xs font-bold text-[#27500A]">
-              Save 20%
-            </span>
+        <section className="mt-8">
+          <div className="mb-12 flex flex-col items-center gap-3">
+            <div className="inline-flex rounded-full bg-[#E3DDCF] p-1">
+              <button
+                type="button"
+                onClick={() => setBilling('monthly')}
+                className={`rounded-full px-6 py-2 text-sm font-semibold transition-all ${
+                  billing === 'monthly'
+                    ? 'bg-white text-[#2A2A2A] shadow-sm'
+                    : 'text-[#8A8680]'
+                }`}
+              >
+                Monthly
+              </button>
+              <button
+                type="button"
+                onClick={() => setBilling('yearly')}
+                className={`rounded-full px-6 py-2 text-sm font-semibold transition-all ${
+                  billing === 'yearly'
+                    ? 'bg-white text-[#2A2A2A] shadow-sm'
+                    : 'text-[#8A8680]'
+                }`}
+              >
+                Yearly
+              </button>
+            </div>
+
+            {billing === 'yearly' ? (
+              <div className="flex items-center gap-2">
+                <span className="rounded-full bg-[#EAF3DE] px-3 py-1.5 text-xs font-bold text-[#27500A]">
+                  🎉 Save 20% with yearly billing
+                </span>
+              </div>
+            ) : (
+              <p className="text-xs text-[#8A8680]">Switch to yearly and save 20% →</p>
+            )}
           </div>
         </section>
 
         <section className="mb-10 mt-10">
-          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-5 md:grid-cols-3">
+          <div className="mx-auto mt-8 grid max-w-5xl grid-cols-1 gap-5 md:grid-cols-3">
             <div className="flex-1 rounded-2xl border border-[#E3DDCF] bg-white p-7">
               <span className="mb-4 inline-flex rounded-full bg-[#F5F3EC] px-3 py-1 text-xs text-[#4E4E4E]">
                 Closet Starter
@@ -193,22 +202,31 @@ export default function PricingPage() {
               Style Bestie
             </span>
             <h2 className="text-[28px] font-bold text-white">Pro</h2>
-            <div className="mt-3 flex items-end gap-2">
-              <span className="text-[48px] font-bold leading-none text-white">
-                {billing === 'monthly' ? '₹199' : '₹159'}
-              </span>
-              <span className="text-[16px] text-[#8A8680]">/month</span>
+            <div className="mb-6 mt-3">
+              <div className="mb-1 flex items-baseline gap-2">
+                <span className="text-5xl font-bold text-white">
+                  ₹{billing === 'monthly' ? '199' : '159'}
+                </span>
+                <span className="text-base" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                  /month
+                </span>
+              </div>
+              {billing === 'yearly' ? (
+                <p className="mb-1 text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                  ₹1,910 billed yearly
+                </p>
+              ) : (
+                <p className="mb-1 text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                  Billed monthly · Cancel anytime
+                </p>
+              )}
+              <p
+                className="mb-6 mt-1 text-sm font-medium"
+                style={{ color: 'rgba(255,255,255,0.8)' }}
+              >
+                Less than your last Zomato order 🍕
+              </p>
             </div>
-            {billing === 'yearly' ? (
-              <p className="mt-1 text-[12px] text-white">₹1,910 billed yearly</p>
-            ) : null}
-            <p className="mt-1 text-[13px] text-white">
-              Billed monthly. Cancel anytime.
-            </p>
-            <p className="mt-1 text-[13px] text-white">
-              Less than your last Zomato order 🍕
-            </p>
-            <p className="mt-1 text-[11px] text-white">Less than a coffee a week ☕</p>
             <div className="my-6 border-t border-white/10" />
             <ul className="space-y-3 text-sm text-white">
               {[
