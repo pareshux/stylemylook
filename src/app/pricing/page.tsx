@@ -4,17 +4,39 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Check, ChevronDown, X } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { RazorpayCheckout } from '@/components/app/RazorpayCheckout'
 
 export default function PricingPage() {
   const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly')
   const [openIndex, setOpenIndex] = useState<number | null>(null)
   const [toast, setToast] = useState<string | null>(null)
+  const supabase = createClient()
+  const [userEmail, setUserEmail] = useState('')
+  const [userName, setUserName] = useState<string | undefined>(undefined)
 
   useEffect(() => {
     if (!toast) return
     const t = window.setTimeout(() => setToast(null), 2500)
     return () => window.clearTimeout(t)
   }, [toast])
+
+  useEffect(() => {
+    let cancelled = false
+    async function loadUser() {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+      if (cancelled) return
+      const email = session?.user?.email ?? ''
+      setUserEmail(email)
+      if (email) setUserName(email.split('@')[0])
+    }
+    void loadUser()
+    return () => {
+      cancelled = true
+    }
+  }, [supabase])
 
   const faqs = [
     {
@@ -276,17 +298,14 @@ export default function PricingPage() {
                 </div>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() =>
-                setToast(
-                  "Coming soon! We'll notify you when payments are live."
-                )
-              }
-              className="mt-6 w-full rounded-full bg-white py-4 text-base font-bold text-[#2A2A2A] transition-colors hover:bg-[#E3DDCF]"
-            >
-              Upgrade to Pro →
-            </button>
+            <div className="mt-6">
+              <RazorpayCheckout
+                plan="pro"
+                billing={billing}
+                userEmail={userEmail}
+                userName={userName}
+              />
+            </div>
             <p
               className="mt-3 text-center text-xs"
               style={{ color: 'rgba(255,255,255,0.6)' }}
@@ -339,15 +358,14 @@ export default function PricingPage() {
                   </li>
                 ))}
               </ul>
-              <button
-                type="button"
-                onClick={() =>
-                  setToast("Coming soon! We'll notify you when payments are live.")
-                }
-                className="mt-6 w-full rounded-full bg-[#2A2A2A] py-3 text-base font-bold text-white transition-colors hover:bg-[#404040]"
-              >
-                Upgrade to Premium →
-              </button>
+              <div className="mt-6">
+                <RazorpayCheckout
+                  plan="premium"
+                  billing={billing}
+                  userEmail={userEmail}
+                  userName={userName}
+                />
+              </div>
             </div>
           </div>
         </section>

@@ -5,13 +5,16 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 
 import { createClient } from '@/lib/supabase/client'
+import { CancelSubscriptionButton } from '@/components/app/CancelSubscriptionButton'
 
 type Profile = {
   full_name: string | null
   avatar_url: string | null
-  plan: 'free' | 'pro'
+  plan: 'free' | 'pro' | 'premium' | 'cancelling'
   wardrobe_count: number | null
   suggestions_count: number | null
+  plan_expires_at: string | null
+  billing_cycle: 'monthly' | 'yearly' | null
 }
 
 function ProgressBar({
@@ -66,7 +69,9 @@ export default function ProfilePage() {
 
       const { data } = await supabase
         .from('profiles')
-        .select('full_name, avatar_url, plan, wardrobe_count, suggestions_count')
+        .select(
+          'full_name, avatar_url, plan, wardrobe_count, suggestions_count, plan_expires_at, billing_cycle'
+        )
         .eq('id', user.id)
         .maybeSingle()
 
@@ -75,9 +80,11 @@ export default function ProfilePage() {
       const merged: Profile = {
         full_name: data?.full_name ?? '',
         avatar_url: data?.avatar_url ?? null,
-        plan: (data?.plan as 'free' | 'pro') ?? 'free',
+        plan: (data?.plan as Profile['plan']) ?? 'free',
         wardrobe_count: data?.wardrobe_count ?? 0,
         suggestions_count: data?.suggestions_count ?? 0,
+        plan_expires_at: (data?.plan_expires_at as string | null) ?? null,
+        billing_cycle: (data?.billing_cycle as Profile['billing_cycle']) ?? null,
       }
       setProfile(merged)
 
@@ -156,6 +163,26 @@ export default function ProfilePage() {
 
   const wardrobeCount = profile?.wardrobe_count ?? 0
   const suggestionsCount = profile?.suggestions_count ?? 0
+
+  const planLabel =
+    profile?.plan === 'premium'
+      ? 'Premium'
+      : profile?.plan === 'pro' || profile?.plan === 'cancelling'
+        ? 'Pro'
+        : 'Free'
+
+  const billingLabel =
+    profile?.billing_cycle === 'yearly'
+      ? 'Billed yearly'
+      : 'Billed monthly'
+
+  const planExpiresAtText = profile?.plan_expires_at
+    ? new Date(profile.plan_expires_at).toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    : '—'
 
   return (
     <motion.div
@@ -300,7 +327,7 @@ export default function ProfilePage() {
                 Your plan
               </p>
               <p className="mt-1 text-base font-semibold text-[#2A2A2A]">
-                {profile?.plan === 'pro' ? 'Pro' : 'Free'}
+                {planLabel}
               </p>
             </div>
             {profile?.plan === 'free' ? (
@@ -314,32 +341,28 @@ export default function ProfilePage() {
             ) : null}
           </div>
 
-          {profile?.plan === 'pro' ? (
-            <p className="text-sm text-[#4E4E4E]">
-              You&apos;re on Pro — enjoy unlimited wardrobe items and outfit
-              suggestions.
-            </p>
-          ) : (
+          {profile?.plan === 'free' ? (
             <div className="space-y-4">
               <div>
                 <div className="mb-1 flex items-center justify-between text-xs font-semibold text-[#4E4E4E]">
                   <span>Wardrobe</span>
-                  <span>
-                    {wardrobeCount}/50 items
-                  </span>
+                  <span>{wardrobeCount}/50 items</span>
                 </div>
                 <ProgressBar value={wardrobeCount} max={50} />
               </div>
               <div>
                 <div className="mb-1 flex items-center justify-between text-xs font-semibold text-[#4E4E4E]">
                   <span>Suggestions</span>
-                  <span>
-                    {suggestionsCount}/10 used
-                  </span>
+                  <span>{suggestionsCount}/10 used</span>
                 </div>
                 <ProgressBar value={suggestionsCount} max={10} />
               </div>
             </div>
+          ) : (
+            <p className="text-sm text-[#4E4E4E]">
+              You&apos;re on {planLabel} — enjoy unlimited wardrobe items and
+              outfit suggestions.
+            </p>
           )}
 
           {/* 
@@ -348,6 +371,56 @@ export default function ProfilePage() {
           -- alter table public.profiles add column if not exists avatar_url text;
           */}
         </section>
+
+        {/* Billing */}
+        {profile?.plan === 'free' ? (
+          <section className="mb-8 rounded-3xl border border-[#E3DDCF] bg-white p-6 md:p-8">
+            <div className="rounded-2xl border border-[#E3DDCF] bg-white p-6 text-center">
+              <p className="mb-3 text-sm text-[#4E4E4E]">
+                You're on the free plan
+              </p>
+              <a
+                href="/pricing"
+                className="rounded-full bg-[#2A2A2A] px-6 py-2.5 text-sm font-semibold text-white"
+              >
+                View plans →
+              </a>
+            </div>
+          </section>
+        ) : (
+          <section className="mb-8 rounded-3xl border border-[#E3DDCF] bg-white p-6 md:p-8">
+            <div className="bg-white rounded-2xl border border-[#E3DDCF] p-6">
+              <h3 className="mb-4 font-bold text-[#2A2A2A]">Billing</h3>
+
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-medium text-[#2A2A2A]">
+                    Current plan
+                  </p>
+                  <p className="mt-0.5 text-xs text-[#8A8680]">
+                    {billingLabel} · Renews {planExpiresAtText}
+                  </p>
+                </div>
+                <span className="rounded-full bg-[#2A2A2A] px-3 py-1.5 text-xs font-bold text-white capitalize">
+                  {planLabel}
+                </span>
+              </div>
+
+              {profile?.plan === 'cancelling' ? (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
+                  ⚠️ Your plan is cancelled. You'll keep access until{' '}
+                  {profile.plan_expires_at
+                    ? new Date(profile.plan_expires_at).toLocaleDateString(
+                        'en-IN'
+                      )
+                    : '—'}.
+                </div>
+              ) : (
+                <CancelSubscriptionButton />
+              )}
+            </div>
+          </section>
+        )}
 
         {/* Danger zone */}
         <section className="mb-4 rounded-3xl border border-[#E3DDCF] bg-white p-6 md:p-8">
