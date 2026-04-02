@@ -201,7 +201,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Freemium suggestion limit enforcement (Free: max 10 suggestions total)
+  // Suggestion limits by plan:
+  // - free: 5
+  // - pro/cancelling: 30
+  // - premium: unlimited
   const { data: profile } = await supabase
     .from('profiles')
     .select('plan, suggestions_count')
@@ -211,9 +214,13 @@ export async function POST(request: Request) {
   const plan = profile?.plan ?? 'free'
   const suggestionsCount = profile?.suggestions_count ?? 0
 
-  if (plan === 'free' && suggestionsCount >= 10) {
+  const isPremium = plan === 'premium'
+  const isProLike = plan === 'pro' || plan === 'cancelling'
+  const planLimit = isPremium ? null : isProLike ? 30 : 5
+
+  if (planLimit !== null && suggestionsCount >= planLimit) {
     return NextResponse.json(
-      { error: 'suggestion_limit_reached' },
+      { error: 'suggestion_limit_reached', plan, limit: planLimit },
       { status: 403 }
     )
   }

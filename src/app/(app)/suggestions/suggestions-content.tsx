@@ -91,6 +91,8 @@ export function SuggestionsContent() {
   const [savingKey, setSavingKey] = useState<string | null>(null)
   const [savedKeys, setSavedKeys] = useState<string[]>([])
   const [suggestionLimitReached, setSuggestionLimitReached] = useState(false)
+  const [limitPlan, setLimitPlan] = useState<'free' | 'pro' | 'premium' | 'cancelling' | null>(null)
+  const [limitValue, setLimitValue] = useState<number | null>(null)
 
   const eventName = eventLabel(eventType)
   const title = sub ? `${sub} ✨` : `${eventName} looks ✨`
@@ -109,6 +111,8 @@ export function SuggestionsContent() {
     setError(null)
     setEmptyWardrobe(false)
     setSuggestionLimitReached(false)
+    setLimitPlan(null)
+    setLimitValue(null)
     setLoading(true)
     setOutfits([])
     setSavedKeys([])
@@ -138,6 +142,10 @@ export function SuggestionsContent() {
 
       if (res.status === 403 && json.error === 'suggestion_limit_reached') {
         setSuggestionLimitReached(true)
+        setLimitPlan(
+          (json.plan as 'free' | 'pro' | 'premium' | 'cancelling' | undefined) ?? 'free'
+        )
+        setLimitValue(typeof json.limit === 'number' ? json.limit : null)
         setOutfits([])
         setLoading(false)
         return
@@ -150,6 +158,21 @@ export function SuggestionsContent() {
     setOutfits(json.outfits ?? [])
     setLoading(false)
   }, [eventType, sub, loadWardrobe])
+
+  const limitHeader =
+    limitPlan === 'pro' || limitPlan === 'cancelling'
+      ? `You've used all ${limitValue ?? 30} Pro suggestions`
+      : `You've used all ${limitValue ?? 5} free suggestions`
+
+  const limitBody =
+    limitPlan === 'pro' || limitPlan === 'cancelling'
+      ? 'Upgrade to Premium for unlimited outfit suggestions and unlimited wardrobe items.'
+      : 'Upgrade to Pro for 30 suggestions/month, more wardrobe space, and new features first.'
+
+  const limitCta =
+    limitPlan === 'pro' || limitPlan === 'cancelling'
+      ? 'Upgrade to Premium — ₹399/month'
+      : 'Upgrade to Pro — ₹199/month'
 
   useEffect(() => {
     if (!eventType) {
@@ -299,16 +322,16 @@ export function SuggestionsContent() {
               ✨
             </div>
             <h2 className="mb-3 text-2xl font-bold text-[#2A2A2A]">
-              You&apos;ve used all 10 free suggestions
+              {limitHeader}
             </h2>
             <p className="mb-8 max-w-sm text-[#4E4E4E]">
-              Upgrade to Pro for unlimited outfit suggestions, unlimited wardrobe items, and new features first.
+              {limitBody}
             </p>
             <Link
               href="/pricing"
               className="mb-4 inline-flex items-center justify-center rounded-full bg-[#2A2A2A] px-8 py-4 text-base font-semibold text-white transition-colors hover:bg-[#404040]"
             >
-              Upgrade to Pro — ₹299/month
+              {limitCta}
             </Link>
             <Link
               href="/saved"
