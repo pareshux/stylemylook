@@ -80,6 +80,7 @@ export function SuggestionsContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const eventType = searchParams.get('event') ?? ''
+  const sub = searchParams.get('sub')
   const supabase = createClient()
 
   const [wardrobe, setWardrobe] = useState<WardrobeRow[]>([])
@@ -92,6 +93,7 @@ export function SuggestionsContent() {
   const [suggestionLimitReached, setSuggestionLimitReached] = useState(false)
 
   const eventName = eventLabel(eventType)
+  const title = sub ? `${sub} ✨` : `${eventName} looks ✨`
 
   const loadWardrobe = useCallback(async () => {
     const { data } = await supabase
@@ -122,7 +124,7 @@ export function SuggestionsContent() {
     const res = await fetch('/api/suggest-outfit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ eventType }),
+      body: JSON.stringify({ eventType, sub }),
     })
 
     const json = await res.json().catch(() => ({}))
@@ -147,7 +149,7 @@ export function SuggestionsContent() {
 
     setOutfits(json.outfits ?? [])
     setLoading(false)
-  }, [eventType, loadWardrobe])
+  }, [eventType, sub, loadWardrobe])
 
   useEffect(() => {
     if (!eventType) {
@@ -155,7 +157,7 @@ export function SuggestionsContent() {
       return
     }
     void fetchSuggestions()
-  }, [eventType, router, fetchSuggestions])
+  }, [eventType, sub, router, fetchSuggestions])
 
   const itemById = Object.fromEntries(wardrobe.map((w) => [w.id, w]))
 
@@ -258,7 +260,7 @@ export function SuggestionsContent() {
               ← Back
             </Link>
             <h1 className="min-w-0 flex-1 text-[28px] font-bold leading-tight text-[#2A2A2A] md:text-[40px]">
-              Outfits for {eventName} <span aria-hidden>✨</span>
+              {title}
             </h1>
           </div>
           {!emptyWardrobe ? (

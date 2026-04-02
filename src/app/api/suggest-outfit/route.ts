@@ -155,7 +155,7 @@ export async function POST(request: Request) {
     authToken: null,
   })
 
-  let body: { eventType?: string }
+  let body: { eventType?: string; sub?: string | null }
   try {
     body = await request.json()
   } catch {
@@ -166,6 +166,11 @@ export async function POST(request: Request) {
   if (!eventType) {
     return NextResponse.json({ error: 'eventType is required' }, { status: 400 })
   }
+
+  const sub = typeof body.sub === 'string' ? body.sub.trim() : undefined
+  const occasionText = sub
+    ? `${eventLabel(eventType)} (specifically: ${sub})`
+    : eventLabel(eventType)
 
   const cookieStore = await cookies()
   const supabase = createServerClient(
@@ -246,7 +251,7 @@ export async function POST(request: Request) {
       type: 'text',
       text: `You are StyleAI, a fast and creative personal stylist. You can see all the clothing items above (each image is followed by its Item ID and label).
 
-Event: ${eventLabel(eventType)} (id: ${eventType})
+Event: ${occasionText}
 
 Create up to 3 outfit suggestions using ONLY the items shown in the images above (use the Item IDs given).
 
@@ -278,7 +283,7 @@ Return ONLY valid JSON (no markdown):
       model,
       max_tokens: 8192,
       system:
-        'You are StyleAI, a fast and creative personal stylist. You will receive wardrobe photos and must suggest complete outfits. Be concise but specific. Always return valid JSON only — no markdown, no extra text. Prioritize outfits that actually work together based on color, style and occasion.',
+        `You are StyleAI, a fast and creative personal stylist. You will receive wardrobe photos and must suggest complete outfits. Be concise but specific. Always return valid JSON only — no markdown, no extra text. Prioritize outfits that actually work together based on color, style and occasion.\n\nEvent: ${occasionText}`,
       messages: [{ role: 'user', content }],
     })
     const block = msg.content.find((b) => b.type === 'text')
