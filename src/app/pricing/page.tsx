@@ -54,6 +54,28 @@ export default function PricingPage() {
     }
   }, [supabase])
 
+  async function ensureRazorpayLoaded() {
+    if (typeof window === 'undefined') return
+    if (window.Razorpay) return
+
+    await new Promise<void>((resolve, reject) => {
+      const existing = document.querySelector(
+        'script[src="https://checkout.razorpay.com/v1/checkout.js"]'
+      )
+      if (existing) {
+        // Script tag exists; assume it will load shortly.
+        resolve()
+        return
+      }
+
+      const script = document.createElement('script')
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+      script.onload = () => resolve()
+      script.onerror = () => reject(new Error('Failed to load Razorpay checkout script'))
+      document.body.appendChild(script)
+    })
+  }
+
   async function handleProUpgrade() {
     if (userPlan === 'pro') return
     if (!userId || !userEmail) {
@@ -82,6 +104,11 @@ export default function PricingPage() {
       const subscriptionId = data.subscriptionId as string | undefined
       const keyId = data.keyId as string | undefined
       if (!subscriptionId || !keyId) throw new Error('Missing Razorpay data')
+
+      await ensureRazorpayLoaded()
+      if (!(window as any).Razorpay) {
+        throw new Error('Razorpay SDK not available')
+      }
 
       const rzp = new (window as any).Razorpay({
         key: keyId,
