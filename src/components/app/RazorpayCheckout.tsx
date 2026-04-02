@@ -52,7 +52,7 @@ export function RazorpayCheckout({
 
   async function handleCheckout() {
     console.log('Checkout clicked:', { plan, billing, userEmail, userName })
-    if (!userEmail) console.log('No email — proceeding to API auth')
+    if (!userEmail) console.log('No email on client — proceeding to API auth')
 
     setLoading(true)
 
@@ -95,7 +95,7 @@ export function RazorpayCheckout({
         description: `${planLabel} — ${billing === 'yearly' ? 'Yearly' : 'Monthly'} Plan`,
         image: '/logo.svg',
         prefill: {
-          email: userEmail,
+          email: userEmail || undefined,
           name: userName || '',
         },
         theme: {
