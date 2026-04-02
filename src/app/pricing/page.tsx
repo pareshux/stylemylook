@@ -211,9 +211,9 @@ export default function PricingPage() {
                     {item}
                   </li>
                 ))}
-                <p className="ml-6 -mt-2 text-xs text-[#8A8680]">
+                <li className="ml-6 -mt-2 text-xs text-[#8A8680]">
                   Pro gets 4 suggestions per outfit
-                </p>
+                </li>
                 <li className="flex items-center gap-2 text-[#8A8680] line-through">
                   <X className="h-4 w-4" />
                   Unlimited suggestions
