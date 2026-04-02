@@ -25,16 +25,6 @@ export function RazorpayCheckout({
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-  const prices: Record<string, number> = {
-    'pro-monthly': 199,
-    'pro-yearly': 1910,
-    'premium-monthly': 399,
-    'premium-yearly': 3830,
-  }
-
-  const price =
-    prices[`${plan}-${billing}` as keyof typeof prices] ?? 0
-
   const planLabels: Record<string, string> = {
     pro: 'Pro',
     premium: 'Premium',
@@ -140,17 +130,27 @@ export function RazorpayCheckout({
       : 'w-full bg-[#2A2A2A] text-white rounded-full py-3 font-bold text-base hover:bg-[#404040] transition-colors disabled:opacity-60'
 
   return (
-    <button
-      onClick={handleCheckout}
-      disabled={loading}
-      className={buttonClass}
-    >
-      {loading
-        ? 'Opening payment...'
-        : `Upgrade to ${planLabel} — ₹${price.toLocaleString(
-            'en-IN'
-          )}${billing === 'monthly' ? '/mo' : '/yr'} →`}
-    </button>
+    <div className="space-y-2">
+      <button
+        onClick={handleCheckout}
+        disabled={loading}
+        className={buttonClass}
+      >
+        {loading ? (
+          <span className="inline-flex items-center justify-center gap-2">
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            Opening secure checkout...
+          </span>
+        ) : (
+          `Upgrade to ${planLabel} →`
+        )}
+      </button>
+      {loading ? (
+        <p className="text-center text-xs text-[#8A8680]">
+          Hang tight - this can take a few seconds on slower internet.
+        </p>
+      ) : null}
+    </div>
   )
 }
 
