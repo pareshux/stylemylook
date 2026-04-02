@@ -23,5 +23,5 @@
     "**/*.tsx",
     ".next/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "styleai"]
+  "exclude": ["node_modules", "styleai", "supabase/functions"]
 }

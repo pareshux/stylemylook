@@ -1,0 +1,7 @@
+# Supabase CLI config (https://supabase.com/docs/guides/cli/config)
+#
+# Database Webhooks call Edge Functions without a user JWT; disable JWT verify
+# for this function so the hook succeeds (still protect with Dashboard hook config).
+
+[functions.send-invite]
+verify_jwt = false

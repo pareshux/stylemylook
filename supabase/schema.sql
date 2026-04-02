@@ -65,6 +65,23 @@ alter table public.waitlist enable row level security;
 create policy "Anyone can join waitlist" on public.waitlist
   for insert with check (true);
 
+-- Waitlist invite flags (Database Webhook → Edge Function send-invite)
+alter table public.waitlist
+  add column if not exists invited boolean default false,
+  add column if not exists invited_at timestamptz;
+
+-- One-time auth invites (token accepted at /auth/invite)
+create table if not exists public.auth_invites (
+  id uuid default gen_random_uuid() primary key,
+  email text not null,
+  token_hash text not null unique,
+  expires_at timestamptz not null,
+  used_at timestamptz,
+  created_at timestamptz default now()
+);
+
+create unique index if not exists auth_invites_email_key on public.auth_invites (email);
+
 -- Storage: Dashboard → Storage → New bucket → name: wardrobe → Public bucket
 -- (app uses getPublicUrl for wardrobe photos).
 
