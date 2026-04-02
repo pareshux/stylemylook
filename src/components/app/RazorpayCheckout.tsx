@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface RazorpayCheckoutProps {
@@ -40,6 +40,15 @@ export function RazorpayCheckout({
     premium: 'Wardrobe Goals',
   }
   const planLabel = planLabels[plan] ?? plan
+
+  useEffect(() => {
+    console.log('RazorpayCheckout mounted:', {
+      plan,
+      billing,
+      userEmailPresent: Boolean(userEmail),
+      userName,
+    })
+  }, [plan, billing, userEmail, userName])
 
   async function handleCheckout() {
     console.log('Checkout clicked:', { plan, billing, userEmail, userName })
