@@ -3,22 +3,16 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Check, ChevronDown, Loader2, X } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { Check, ChevronDown, X } from 'lucide-react'
 import { RazorpayCheckout } from '@/components/app/RazorpayCheckout'
 
 export default function PricingPage() {
-  const router = useRouter()
   const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly')
   const [openIndex, setOpenIndex] = useState<number | null>(null)
   const [toast, setToast] = useState<string | null>(null)
-  const supabase = createClient()
   const [userEmail, setUserEmail] = useState('')
-  const [userName, setUserName] = useState<string | undefined>(undefined)
-  const [userId, setUserId] = useState<string | null>(null)
+  const [userName, setUserName] = useState('')
   const [userPlan, setUserPlan] = useState<string | null>(null)
-  const [proUpgradeLoading, setProUpgradeLoading] = useState(false)
 
   useEffect(() => {
     if (!toast) return
@@ -27,143 +21,40 @@ export default function PricingPage() {
   }, [toast])
 
   useEffect(() => {
-    let cancelled = false
-    async function loadUser() {
+    async function getUser() {
+      const { createBrowserClient } = await import('@supabase/ssr')
+
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      )
+
       const {
         data: { session },
       } = await supabase.auth.getSession()
-      if (cancelled) return
-      const u = session?.user
-      const email = u?.email ?? ''
-      setUserId(u?.id ?? null)
-      setUserEmail(email)
-      if (email) setUserName(email.split('@')[0])
 
-      if (u?.id) {
+      if (session?.user) {
+        setUserEmail(session.user.email || '')
+        const fullNameFromMeta =
+          (session.user.user_metadata as any)?.full_name
+        setUserName(
+          fullNameFromMeta ||
+            session.user.email?.split('@')[0] ||
+            ''
+        )
+
         const { data: profile } = await supabase
           .from('profiles')
           .select('plan')
-          .eq('id', u.id)
+          .eq('id', session.user.id)
           .maybeSingle()
+
         if (profile?.plan) setUserPlan(profile.plan)
       }
     }
-    void loadUser()
-    return () => {
-      cancelled = true
-    }
-  }, [supabase])
 
-  async function ensureRazorpayLoaded() {
-    if (typeof window === 'undefined') return
-    if (window.Razorpay) return
-
-    await new Promise<void>((resolve, reject) => {
-      const existing = document.querySelector(
-        'script[src="https://checkout.razorpay.com/v1/checkout.js"]'
-      )
-      if (existing) {
-        // Script tag exists; assume it will load shortly.
-        resolve()
-        return
-      }
-
-      const script = document.createElement('script')
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js'
-      script.onload = () => resolve()
-      script.onerror = () => reject(new Error('Failed to load Razorpay checkout script'))
-      document.body.appendChild(script)
-    })
-  }
-
-  async function handleProUpgrade() {
-    if (userPlan === 'pro') return
-    if (!userId || !userEmail) {
-      setToast('Please log in to upgrade.')
-      return
-    }
-
-    setProUpgradeLoading(true)
-    try {
-      const res = await fetch('/api/razorpay/create-subscription', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          email: userEmail,
-          name: userName ?? '',
-          billing,
-        }),
-      })
-
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok || data.error) {
-        throw new Error(data.error ?? 'Failed to create subscription')
-      }
-
-      const subscriptionId = data.subscriptionId as string | undefined
-      const keyId = data.keyId as string | undefined
-      if (!subscriptionId || !keyId) throw new Error('Missing Razorpay data')
-
-      await ensureRazorpayLoaded()
-      if (!(window as any).Razorpay) {
-        throw new Error('Razorpay SDK not available')
-      }
-
-      const rzp = new (window as any).Razorpay({
-        key: keyId,
-        subscription_id: subscriptionId,
-        name: 'StyleMyLook',
-        description: 'Pro Plan — Unlimited Styling',
-        image: '/logo.svg',
-        prefill: {
-          email: userEmail,
-          name: userName ?? '',
-        },
-        theme: { color: '#2A2A2A' },
-        handler: async function (response: any) {
-          try {
-            const verifyRes = await fetch('/api/razorpay/verify', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_subscription_id: response.razorpay_subscription_id,
-                razorpay_signature: response.razorpay_signature,
-                userId,
-              }),
-            })
-
-            const verifyData = await verifyRes
-              .json()
-              .catch(() => ({} as { success?: boolean; error?: string }))
-
-            if (verifyRes.ok && verifyData?.success) {
-              setToast('Welcome to Pro! 🎉')
-              router.refresh()
-            } else {
-              setToast('Payment verification failed. Please contact support.')
-            }
-          } catch {
-            setToast('Payment verification failed. Please contact support.')
-          } finally {
-            setProUpgradeLoading(false)
-          }
-        },
-        modal: {
-          ondismiss: function () {
-            setProUpgradeLoading(false)
-          },
-        },
-      })
-
-      rzp.open()
-    } catch (err: any) {
-      console.error('Pro upgrade error:', err)
-      setToast('Payment failed. Please try again.')
-      setProUpgradeLoading(false)
-    }
-  }
+    void getUser()
+  }, [])
 
   const faqs = [
     {
@@ -441,23 +332,12 @@ export default function PricingPage() {
               </div>
             ) : (
               <div className="mt-6">
-                <button
-                  type="button"
-                  onClick={() => void handleProUpgrade()}
-                  disabled={proUpgradeLoading || !userEmail}
-                  className="w-full rounded-full bg-white py-4 text-base font-bold text-[#2A2A2A] transition-colors hover:bg-[#E3DDCF] disabled:opacity-60 disabled:hover:bg-white"
-                >
-                  {proUpgradeLoading ? (
-                    <span className="inline-flex items-center justify-center">
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
-                      Opening payment…
-                    </span>
-                  ) : (
-                    `Upgrade to Style Bestie — ₹${
-                      billing === 'monthly' ? '199' : '1,910'
-                    }${billing === 'monthly' ? '/mo' : '/yr'} →`
-                  )}
-                </button>
+                <RazorpayCheckout
+                  plan="pro"
+                  billing={billing}
+                  userEmail={userEmail}
+                  userName={userName}
+                />
               </div>
             )}
             <p

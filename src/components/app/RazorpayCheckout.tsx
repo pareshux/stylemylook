@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface RazorpayCheckoutProps {
@@ -24,7 +24,6 @@ export function RazorpayCheckout({
 }: RazorpayCheckoutProps) {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const [razorpayKeyId, setRazorpayKeyId] = useState<string | null>(null)
 
   const prices: Record<string, number> = {
     'pro-monthly': 199,
@@ -36,37 +35,31 @@ export function RazorpayCheckout({
   const price =
     prices[`${plan}-${billing}` as keyof typeof prices] ?? 0
 
-  const planLabel = plan === 'pro' ? 'Style Bestie' : 'Wardrobe Goals'
-
-  useEffect(() => {
-    // Optional: if we already have a Razorpay key in memory, keep using it.
-    // (The actual key is provided by the server when creating subscription.)
-    if (razorpayKeyId) return
-  }, [razorpayKeyId])
-
-  async function ensureRazorpayLoaded() {
-    if (typeof window === 'undefined') return
-    if (window.Razorpay) return
-
-    await new Promise<void>((resolve) => {
-      const script = document.createElement('script')
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js'
-      script.onload = () => resolve()
-      document.body.appendChild(script)
-    })
+  const planLabels: Record<string, string> = {
+    pro: 'Style Bestie',
+    premium: 'Wardrobe Goals',
   }
+  const planLabel = planLabels[plan] ?? plan
 
   async function handleCheckout() {
-    setLoading(true)
-    try {
-      if (!userEmail) {
-        alert('Please log in to upgrade your plan.')
-        return
-      }
+    if (!userEmail) {
+      router.push('/login?redirect=/pricing')
+      return
+    }
 
-      await ensureRazorpayLoaded()
+    setLoading(true)
+
+    try {
+      // Load Razorpay script
       if (!window.Razorpay) {
-        throw new Error('Razorpay SDK failed to load')
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement('script')
+          script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+          script.onload = () => resolve()
+          script.onerror = () =>
+            reject(new Error('Failed to load Razorpay checkout script'))
+          document.body.appendChild(script)
+        })
       }
 
       // Create subscription
@@ -76,17 +69,17 @@ export function RazorpayCheckout({
         body: JSON.stringify({ plan, billing }),
       })
 
-      const json = await res.json().catch(() => ({}))
-      if (!res.ok || json.error) {
-        throw new Error(json.error ?? 'Failed to create subscription')
+      const data = await res.json()
+      const { subscription_id, key_id, error } = data as {
+        subscription_id?: string
+        key_id?: string
+        error?: string
       }
 
-      const { subscription_id, key_id } = json as {
-        subscription_id: string
-        key_id: string
+      if (error) throw new Error(error)
+      if (!subscription_id || !key_id) {
+        throw new Error('Missing Razorpay subscription/key id')
       }
-
-      setRazorpayKeyId(key_id)
 
       const rzp = new window.Razorpay({
         key: key_id,
@@ -96,12 +89,13 @@ export function RazorpayCheckout({
         image: '/logo.svg',
         prefill: {
           email: userEmail,
-          name: userName ?? '',
+          name: userName || '',
         },
         theme: {
           color: '#2A2A2A',
         },
         handler: function () {
+          // Webhook will update DB; we refresh UI after returning.
           router.push('/profile?upgraded=true')
           router.refresh()
         },
@@ -115,20 +109,25 @@ export function RazorpayCheckout({
       rzp.open()
     } catch (err: any) {
       console.error('Checkout error:', err)
-      alert('Payment failed. Please try again.')
+      alert('Something went wrong: ' + (err?.message ?? 'Unknown error'))
     } finally {
       setLoading(false)
     }
   }
 
+  const buttonClass =
+    plan === 'pro'
+      ? 'w-full bg-white text-[#2A2A2A] rounded-full py-4 font-bold text-base hover:bg-[#E3DDCF] transition-colors disabled:opacity-60'
+      : 'w-full bg-[#2A2A2A] text-white rounded-full py-3 font-bold text-base hover:bg-[#404040] transition-colors disabled:opacity-60'
+
   return (
     <button
       onClick={handleCheckout}
-      disabled={loading || !userEmail}
-      className="w-full rounded-full bg-white py-4 font-bold text-base text-[#2A2A2A] transition-colors hover:bg-[#E3DDCF] disabled:opacity-60 disabled:hover:bg-white"
+      disabled={loading}
+      className={buttonClass}
     >
       {loading
-        ? 'Opening payment…'
+        ? 'Opening payment...'
         : `Upgrade to ${planLabel} — ₹${price.toLocaleString('en-IN')}${billing === 'monthly' ? '/mo' : '/yr'} →`}
     </button>
   )
