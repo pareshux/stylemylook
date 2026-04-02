@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import { Analytics } from '@vercel/analytics/next'
+import Script from 'next/script'
 import { Instrument_Sans } from 'next/font/google'
 
 import './globals.css'
@@ -28,6 +29,10 @@ export default function RootLayout({
     <html lang="en" className={`${instrumentSans.variable}`}>
       <body className={`${instrumentSans.className} antialiased`}>
         {children}
+        <Script
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="lazyOnload"
+        />
         <Analytics />
       </body>
     </html>

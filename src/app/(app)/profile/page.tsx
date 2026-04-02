@@ -170,6 +170,7 @@ export default function ProfilePage() {
       : profile?.plan === 'pro' || profile?.plan === 'cancelling'
         ? 'Pro'
         : 'Free'
+  const isProActive = profile?.plan === 'pro' || profile?.plan === 'cancelling'
 
   const billingLabel =
     profile?.billing_cycle === 'yearly'
@@ -327,7 +328,17 @@ export default function ProfilePage() {
                 Your plan
               </p>
               <p className="mt-1 text-base font-semibold text-[#2A2A2A]">
-                {planLabel}
+                <span className="inline-flex items-center gap-2">
+                  {planLabel}
+                  {isProActive ? (
+                    <span
+                      className="inline-flex h-5 items-center justify-center rounded-full bg-[#2A2A2A] px-1 text-xs font-bold text-white"
+                      aria-hidden
+                    >
+                      ✓
+                    </span>
+                  ) : null}
+                </span>
               </p>
             </div>
             {profile?.plan === 'free' ? (

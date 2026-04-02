@@ -68,7 +68,11 @@ export async function POST(req: NextRequest) {
 
   const razorpayKeyId = process.env.RAZORPAY_KEY_ID
   const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET
-  const publicRazorpayKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID
+  // Razorpay Checkout needs the public key; in our env it's safe to reuse RAZORPAY_KEY_ID
+  // when NEXT_PUBLIC_RAZORPAY_KEY_ID is missing.
+  const publicRazorpayKeyId =
+    process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID
+
   if (!razorpayKeyId || !razorpayKeySecret || !publicRazorpayKeyId) {
     return NextResponse.json(
       { error: 'Razorpay is not configured (missing env vars)' },

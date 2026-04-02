@@ -3,17 +3,22 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Check, ChevronDown, X } from 'lucide-react'
+import { Check, ChevronDown, Loader2, X } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { RazorpayCheckout } from '@/components/app/RazorpayCheckout'
 
 export default function PricingPage() {
+  const router = useRouter()
   const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly')
   const [openIndex, setOpenIndex] = useState<number | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const supabase = createClient()
   const [userEmail, setUserEmail] = useState('')
   const [userName, setUserName] = useState<string | undefined>(undefined)
+  const [userId, setUserId] = useState<string | null>(null)
+  const [userPlan, setUserPlan] = useState<string | null>(null)
+  const [proUpgradeLoading, setProUpgradeLoading] = useState(false)
 
   useEffect(() => {
     if (!toast) return
@@ -28,15 +33,110 @@ export default function PricingPage() {
         data: { session },
       } = await supabase.auth.getSession()
       if (cancelled) return
-      const email = session?.user?.email ?? ''
+      const u = session?.user
+      const email = u?.email ?? ''
+      setUserId(u?.id ?? null)
       setUserEmail(email)
       if (email) setUserName(email.split('@')[0])
+
+      if (u?.id) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('plan')
+          .eq('id', u.id)
+          .maybeSingle()
+        if (profile?.plan) setUserPlan(profile.plan)
+      }
     }
     void loadUser()
     return () => {
       cancelled = true
     }
   }, [supabase])
+
+  async function handleProUpgrade() {
+    if (userPlan === 'pro') return
+    if (!userId || !userEmail) {
+      setToast('Please log in to upgrade.')
+      return
+    }
+
+    setProUpgradeLoading(true)
+    try {
+      const res = await fetch('/api/razorpay/create-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          email: userEmail,
+          name: userName ?? '',
+          billing,
+        }),
+      })
+
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok || data.error) {
+        throw new Error(data.error ?? 'Failed to create subscription')
+      }
+
+      const subscriptionId = data.subscriptionId as string | undefined
+      const keyId = data.keyId as string | undefined
+      if (!subscriptionId || !keyId) throw new Error('Missing Razorpay data')
+
+      const rzp = new (window as any).Razorpay({
+        key: keyId,
+        subscription_id: subscriptionId,
+        name: 'StyleMyLook',
+        description: 'Pro Plan — Unlimited Styling',
+        image: '/logo.svg',
+        prefill: {
+          email: userEmail,
+          name: userName ?? '',
+        },
+        theme: { color: '#2A2A2A' },
+        handler: async function (response: any) {
+          try {
+            const verifyRes = await fetch('/api/razorpay/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_subscription_id: response.razorpay_subscription_id,
+                razorpay_signature: response.razorpay_signature,
+                userId,
+              }),
+            })
+
+            const verifyData = await verifyRes
+              .json()
+              .catch(() => ({} as { success?: boolean; error?: string }))
+
+            if (verifyRes.ok && verifyData?.success) {
+              setToast('Welcome to Pro! 🎉')
+              router.refresh()
+            } else {
+              setToast('Payment verification failed. Please contact support.')
+            }
+          } catch {
+            setToast('Payment verification failed. Please contact support.')
+          } finally {
+            setProUpgradeLoading(false)
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            setProUpgradeLoading(false)
+          },
+        },
+      })
+
+      rzp.open()
+    } catch (err: any) {
+      console.error('Pro upgrade error:', err)
+      setToast('Payment failed. Please try again.')
+      setProUpgradeLoading(false)
+    }
+  }
 
   const faqs = [
     {
@@ -220,6 +320,11 @@ export default function PricingPage() {
             <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-[#E3DDCF] px-4 py-1.5 text-xs font-bold text-[#2A2A2A]">
               Most popular
             </span>
+            {userPlan === 'pro' ? (
+              <span className="absolute -top-3.5 right-6 rounded-full bg-white/10 px-4 py-1.5 text-xs font-bold text-white">
+                Current plan
+              </span>
+            ) : null}
             <span className="mb-4 inline-flex rounded-full bg-white/10 px-3 py-1 text-xs text-white/70">
               Style Bestie
             </span>
@@ -298,14 +403,36 @@ export default function PricingPage() {
                 </div>
               </div>
             </div>
-            <div className="mt-6">
-              <RazorpayCheckout
-                plan="pro"
-                billing={billing}
-                userEmail={userEmail}
-                userName={userName}
-              />
-            </div>
+            {userPlan === 'pro' ? (
+              <div className="mt-6">
+                <a
+                  href="/profile"
+                  className="block w-full rounded-full bg-white py-4 text-center text-base font-bold text-[#2A2A2A] transition-colors hover:bg-[#E3DDCF]"
+                >
+                  Manage subscription →
+                </a>
+              </div>
+            ) : (
+              <div className="mt-6">
+                <button
+                  type="button"
+                  onClick={() => void handleProUpgrade()}
+                  disabled={proUpgradeLoading || !userEmail}
+                  className="w-full rounded-full bg-white py-4 text-base font-bold text-[#2A2A2A] transition-colors hover:bg-[#E3DDCF] disabled:opacity-60 disabled:hover:bg-white"
+                >
+                  {proUpgradeLoading ? (
+                    <span className="inline-flex items-center justify-center">
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
+                      Opening payment…
+                    </span>
+                  ) : (
+                    `Upgrade to Style Bestie — ₹${
+                      billing === 'monthly' ? '199' : '1,910'
+                    }${billing === 'monthly' ? '/mo' : '/yr'} →`
+                  )}
+                </button>
+              </div>
+            )}
             <p
               className="mt-3 text-center text-xs"
               style={{ color: 'rgba(255,255,255,0.6)' }}
