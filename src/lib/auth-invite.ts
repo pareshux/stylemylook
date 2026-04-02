@@ -1,11 +1,10 @@
 /**
- * Invite-only access for /login and /signup when AUTH_INVITE_SECRET is set.
- * Invited users open e.g. /signup?invite=<secret> once; we set an httpOnly cookie
- * so OAuth and email flows keep working on return.
+ * Invite-only auth gate helpers.
+ * A valid invite link sets a signed cookie so users can access /login and /signup.
  */
 
-export const AUTH_INVITE_COOKIE = 'smx_auth_invite'
-const HMAC_LABEL = 'stylemylook-auth-invite-v1'
+export const AUTH_ACCESS_COOKIE = 'smx_auth_access'
+const HMAC_LABEL = 'stylemylook-auth-access-v1'
 
 function uint8ToBase64Url(bytes: Uint8Array): string {
   let bin = ''
@@ -13,7 +12,7 @@ function uint8ToBase64Url(bytes: Uint8Array): string {
   return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 
-export async function computeInviteCookieValue(secret: string): Promise<string> {
+export async function computeAccessCookieValue(secret: string): Promise<string> {
   const enc = new TextEncoder()
   const key = await crypto.subtle.importKey(
     'raw',

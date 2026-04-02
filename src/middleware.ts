@@ -2,54 +2,33 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 import {
-  AUTH_INVITE_COOKIE,
-  computeInviteCookieValue,
+  AUTH_ACCESS_COOKIE,
+  computeAccessCookieValue,
   timingSafeEqualString,
 } from '@/lib/auth-invite'
 
-async function enforceAuthInviteGate(request: NextRequest): Promise<NextResponse | null> {
-  const secret = process.env.AUTH_INVITE_SECRET?.trim()
-  if (!secret) {
-    return null
-  }
-
-  const cookieVal = request.cookies.get(AUTH_INVITE_COOKIE)?.value ?? ''
-  const expectedToken = await computeInviteCookieValue(secret)
-  const hasValidCookie =
-    cookieVal.length > 0 && timingSafeEqualString(cookieVal, expectedToken)
-
-  const inviteParam = request.nextUrl.searchParams.get('invite') ?? ''
-  const hasValidInviteParam =
-    inviteParam.length > 0 && timingSafeEqualString(inviteParam, secret)
-
-  if (hasValidInviteParam) {
-    const redirectUrl = request.nextUrl.clone()
-    redirectUrl.searchParams.delete('invite')
-    const res = NextResponse.redirect(redirectUrl)
-    res.cookies.set(AUTH_INVITE_COOKIE, expectedToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 60,
-    })
-    return res
-  }
-
-  if (!hasValidCookie) {
-    return NextResponse.redirect(new URL('/', request.url))
-  }
-
-  return null
-}
-
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
+  const inviteOnlyMode = process.env.INVITE_ONLY_MODE === 'true'
 
   if (pathname === '/login' || pathname === '/signup') {
-    const inviteResponse = await enforceAuthInviteGate(request)
-    if (inviteResponse) {
-      return inviteResponse
+    if (!inviteOnlyMode) {
+      return NextResponse.next()
+    }
+
+    const cookieSecret = process.env.AUTH_INVITE_COOKIE_SECRET?.trim()
+    if (!cookieSecret) {
+      console.error('Invite-only mode is enabled but AUTH_INVITE_COOKIE_SECRET is missing')
+      return NextResponse.redirect(new URL('/', request.url))
+    }
+
+    const expectedCookie = await computeAccessCookieValue(cookieSecret)
+    const cookieVal = request.cookies.get(AUTH_ACCESS_COOKIE)?.value ?? ''
+    const hasInviteAccess =
+      cookieVal.length > 0 && timingSafeEqualString(cookieVal, expectedCookie)
+
+    if (!hasInviteAccess) {
+      return NextResponse.redirect(new URL('/', request.url))
     }
     return NextResponse.next()
   }
@@ -83,8 +62,7 @@ export async function middleware(request: NextRequest) {
 
   /**
    * Protected app routes: redirect unauthenticated users to /login.
-   * When AUTH_INVITE_SECRET is set, /login itself requires a prior invite cookie
-   * or ?invite= on first visit, so users without access end up on the homepage.
+   * In invite-only mode, users need invite access cookie before /login is reachable.
    */
   if (!user) {
     const url = request.nextUrl.clone()
