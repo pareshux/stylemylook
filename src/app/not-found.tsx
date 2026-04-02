@@ -20,9 +20,6 @@ export default function NotFound() {
         <Button className="rounded-xl px-6" asChild>
           <Link href="/">Back to home</Link>
         </Button>
-        <Button variant="outline" className="rounded-xl px-6" asChild>
-          <Link href="/login">Log in</Link>
-        </Button>
       </div>
     </div>
   )
