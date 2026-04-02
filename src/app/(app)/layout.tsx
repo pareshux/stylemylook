@@ -42,12 +42,23 @@ export default function AppGroupLayout({ children }: { children: ReactNode }) {
 
       if (!profile) return
 
+      // Use live wardrobe count from wardrobe_items so credits stay accurate
+      // even if profiles.wardrobe_count drifts out of sync.
+      const { count: liveWardrobeCount } = await supabase
+        .from('wardrobe_items')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+
       setAvatarUrl(profile.avatar_url ?? null)
       setProfileName(profile.full_name ?? null)
 
       const suggestionsUsedPercent =
         ((profile.suggestions_count ?? 0) / 10) * 100
-      const wardrobeUsedPercent = ((profile.wardrobe_count ?? 0) / 50) * 100
+      const wardrobeCount =
+        typeof liveWardrobeCount === 'number'
+          ? liveWardrobeCount
+          : (profile.wardrobe_count ?? 0)
+      const wardrobeUsedPercent = (wardrobeCount / 50) * 100
       const combined = Math.round(
         (suggestionsUsedPercent + wardrobeUsedPercent) / 2
       )

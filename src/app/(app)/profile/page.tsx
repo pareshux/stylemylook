@@ -75,13 +75,21 @@ export default function ProfilePage() {
         .eq('id', user.id)
         .maybeSingle()
 
+      const { count: liveWardrobeCount } = await supabase
+        .from('wardrobe_items')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+
       if (cancelled) return
 
       const merged: Profile = {
         full_name: data?.full_name ?? '',
         avatar_url: data?.avatar_url ?? null,
         plan: (data?.plan as Profile['plan']) ?? 'free',
-        wardrobe_count: data?.wardrobe_count ?? 0,
+        wardrobe_count:
+          typeof liveWardrobeCount === 'number'
+            ? liveWardrobeCount
+            : (data?.wardrobe_count ?? 0),
         suggestions_count: data?.suggestions_count ?? 0,
         plan_expires_at: (data?.plan_expires_at as string | null) ?? null,
         billing_cycle: (data?.billing_cycle as Profile['billing_cycle']) ?? null,
