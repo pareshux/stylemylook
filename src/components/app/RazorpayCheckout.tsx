@@ -36,8 +36,8 @@ export function RazorpayCheckout({
     prices[`${plan}-${billing}` as keyof typeof prices] ?? 0
 
   const planLabels: Record<string, string> = {
-    pro: 'Style Bestie',
-    premium: 'Wardrobe Goals',
+    pro: 'Pro',
+    premium: 'Premium',
   }
   const planLabel = planLabels[plan] ?? plan
 
@@ -77,6 +77,18 @@ export function RazorpayCheckout({
       })
 
       const data = await res.json()
+      if (!res.ok) {
+        if (res.status === 401) {
+          alert('Please log in to upgrade your plan.')
+          router.push('/login?redirect=/pricing')
+          return
+        }
+        const message =
+          (data && typeof data.error === 'string' && data.error) ||
+          'Failed to create subscription'
+        throw new Error(message)
+      }
+
       const { subscription_id, key_id, error } = data as {
         subscription_id?: string
         key_id?: string
@@ -135,7 +147,9 @@ export function RazorpayCheckout({
     >
       {loading
         ? 'Opening payment...'
-        : `Upgrade to ${planLabel} — ₹${price.toLocaleString('en-IN')}${billing === 'monthly' ? '/mo' : '/yr'} →`}
+        : `Upgrade to ${planLabel} — ₹${price.toLocaleString(
+            'en-IN'
+          )}${billing === 'monthly' ? '/mo' : '/yr'} →`}
     </button>
   )
 }
