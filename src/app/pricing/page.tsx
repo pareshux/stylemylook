@@ -34,6 +34,7 @@ export default function PricingPage() {
       } = await supabase.auth.getSession()
 
       if (session?.user) {
+        console.log('Pricing page session:', session?.user?.email)
         setUserEmail(session.user.email || '')
         const fullNameFromMeta =
           (session.user.user_metadata as any)?.full_name

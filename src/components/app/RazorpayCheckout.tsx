@@ -42,10 +42,8 @@ export function RazorpayCheckout({
   const planLabel = planLabels[plan] ?? plan
 
   async function handleCheckout() {
-    if (!userEmail) {
-      router.push('/login?redirect=/pricing')
-      return
-    }
+    console.log('Checkout clicked:', { plan, billing, userEmail, userName })
+    if (!userEmail) console.log('No email — proceeding to API auth')
 
     setLoading(true)
 
