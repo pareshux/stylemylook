@@ -171,6 +171,7 @@ export default function ProfilePage() {
 
   const wardrobeCount = profile?.wardrobe_count ?? 0
   const suggestionsCount = profile?.suggestions_count ?? 0
+  const isProPlan = profile?.plan === 'pro' || profile?.plan === 'cancelling'
 
   const planLabel =
     profile?.plan === 'premium'
@@ -178,7 +179,7 @@ export default function ProfilePage() {
       : profile?.plan === 'pro' || profile?.plan === 'cancelling'
         ? 'Pro'
         : 'Free'
-  const isProActive = profile?.plan === 'pro' || profile?.plan === 'cancelling'
+  const isProActive = isProPlan
 
   const billingLabel =
     profile?.billing_cycle === 'yearly'
@@ -365,22 +366,39 @@ export default function ProfilePage() {
               <div>
                 <div className="mb-1 flex items-center justify-between text-xs font-semibold text-[#4E4E4E]">
                   <span>Wardrobe</span>
-                  <span>{wardrobeCount}/50 items</span>
+                  <span>{wardrobeCount}/30 items</span>
                 </div>
-                <ProgressBar value={wardrobeCount} max={50} />
+                <ProgressBar value={wardrobeCount} max={30} />
               </div>
               <div>
                 <div className="mb-1 flex items-center justify-between text-xs font-semibold text-[#4E4E4E]">
                   <span>Suggestions</span>
-                  <span>{suggestionsCount}/10 used</span>
+                  <span>{suggestionsCount}/5 used</span>
                 </div>
-                <ProgressBar value={suggestionsCount} max={10} />
+                <ProgressBar value={suggestionsCount} max={5} />
+              </div>
+            </div>
+          ) : isProPlan ? (
+            <div className="space-y-4">
+              <div>
+                <div className="mb-1 flex items-center justify-between text-xs font-semibold text-[#4E4E4E]">
+                  <span>Wardrobe</span>
+                  <span>{wardrobeCount}/150 items</span>
+                </div>
+                <ProgressBar value={wardrobeCount} max={150} />
+              </div>
+              <div>
+                <div className="mb-1 flex items-center justify-between text-xs font-semibold text-[#4E4E4E]">
+                  <span>Suggestions</span>
+                  <span>{suggestionsCount}/30 used</span>
+                </div>
+                <ProgressBar value={suggestionsCount} max={30} />
               </div>
             </div>
           ) : (
             <p className="text-sm text-[#4E4E4E]">
               You&apos;re on {planLabel} — enjoy unlimited wardrobe items and
-              outfit suggestions.
+              unlimited outfit suggestions.
             </p>
           )}
 

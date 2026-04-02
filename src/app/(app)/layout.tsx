@@ -52,19 +52,30 @@ export default function AppGroupLayout({ children }: { children: ReactNode }) {
       setAvatarUrl(profile.avatar_url ?? null)
       setProfileName(profile.full_name ?? null)
 
+      const plan = profile.plan ?? 'free'
+      const limits =
+        plan === 'premium'
+          ? { suggestions: null, wardrobe: null }
+          : plan === 'pro' || plan === 'cancelling'
+            ? { suggestions: 30, wardrobe: 150 }
+            : { suggestions: 5, wardrobe: 30 }
+
       const suggestionsUsedPercent =
-        ((profile.suggestions_count ?? 0) / 10) * 100
+        limits.suggestions === null
+          ? 0
+          : ((profile.suggestions_count ?? 0) / limits.suggestions) * 100
       const wardrobeCount =
         typeof liveWardrobeCount === 'number'
           ? liveWardrobeCount
           : (profile.wardrobe_count ?? 0)
-      const wardrobeUsedPercent = (wardrobeCount / 50) * 100
+      const wardrobeUsedPercent =
+        limits.wardrobe === null ? 0 : (wardrobeCount / limits.wardrobe) * 100
       const combined = Math.round(
         (suggestionsUsedPercent + wardrobeUsedPercent) / 2
       )
 
       const shouldNudge =
-        profile.plan === 'free' &&
+        plan === 'free' &&
         (suggestionsUsedPercent >= 80 || wardrobeUsedPercent >= 80)
 
       setShowUpgradeNudge(shouldNudge)

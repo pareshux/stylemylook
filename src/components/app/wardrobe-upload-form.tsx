@@ -64,6 +64,7 @@ export function WardrobeUploadForm({
   const [limitModalOpen, setLimitModalOpen] = useState(false)
   const [limitChecking, setLimitChecking] = useState(false)
   const [showCamera, setShowCamera] = useState(false)
+  const [limitPlan, setLimitPlan] = useState<'free' | 'pro' | 'premium' | 'cancelling' | null>(null)
 
   rowsRef.current = rows
 
@@ -223,7 +224,17 @@ export function WardrobeUploadForm({
           .select('id', { count: 'exact', head: true })
           .eq('user_id', user.id)
 
-        if ((profile?.plan ?? 'free') === 'free' && (count ?? 0) >= 50) {
+        const currentPlan =
+          (profile?.plan as 'free' | 'pro' | 'premium' | 'cancelling' | undefined) ?? 'free'
+        const maxItems =
+          currentPlan === 'premium'
+            ? null
+            : currentPlan === 'pro' || currentPlan === 'cancelling'
+              ? 150
+              : 30
+
+        if (maxItems !== null && (count ?? 0) >= maxItems) {
+          setLimitPlan(currentPlan)
           setLimitModalOpen(true)
           setLimitChecking(false)
           return
@@ -553,8 +564,9 @@ export function WardrobeUploadForm({
               You've reached your limit 👗
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-text-primary/70">
-              Free plan includes up to 50 wardrobe items. Upgrade to Pro for
-              unlimited uploads.
+              {limitPlan === 'pro' || limitPlan === 'cancelling'
+                ? 'Pro plan includes up to 150 wardrobe items. Upgrade to Premium for unlimited uploads.'
+                : 'Free plan includes up to 30 wardrobe items. Upgrade to Pro for up to 150 uploads.'}
             </p>
             <div className="mt-5 grid grid-cols-2 gap-3">
               <Button
@@ -573,7 +585,9 @@ export function WardrobeUploadForm({
                   router.push('/pricing')
                 }}
               >
-                Upgrade to Pro →
+                {limitPlan === 'pro' || limitPlan === 'cancelling'
+                  ? 'Upgrade to Premium →'
+                  : 'Upgrade to Pro →'}
               </Button>
             </div>
           </div>
