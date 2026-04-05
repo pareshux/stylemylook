@@ -110,7 +110,9 @@ export async function POST(request: Request) {
     )
   }
 
-  const inviteLink = `${getSiteUrl(request)}/auth/invite?token=${encodeURIComponent(token)}`
+  const siteUrl = getSiteUrl(request)
+  const inviteLink = `${siteUrl}/auth/invite?token=${encodeURIComponent(token)}`
+  const loginLink = `${siteUrl}/login`
   const resend = new Resend(resendApiKey)
   const { error: sendError } = await resend.emails.send({
     from: 'StyleMyLook <hello@stylemylook.xyz>',
@@ -118,9 +120,15 @@ export async function POST(request: Request) {
     subject: 'Your StyleMyLook invite is ready ✨',
     html: `
       <p>Hi there,</p>
-      <p>You are invited to StyleMyLook early access.</p>
-      <p><a href="${inviteLink}">Accept invite and continue</a></p>
-      <p>This link expires in ${expiresInDays} day(s).</p>
+      <p>You’re invited to StyleMyLook early access.</p>
+      <p><strong>Step 1 — Open your invite</strong><br />
+      <a href="${inviteLink}">Accept invite and continue</a></p>
+      <p><strong>Step 2 — Sign up or log in</strong><br />
+      After the invite opens, you can use <strong>Continue with Google</strong>, <strong>Continue with Facebook</strong>,
+      or email and password on the sign-up screen.</p>
+      <p>Already have an account? After accepting the invite (so your browser can reach the app), use:<br />
+      <a href="${loginLink}">Log in to StyleMyLook</a></p>
+      <p style="font-size:13px;color:#666;">Your invite link expires in ${expiresInDays} day(s) and can only be used once.</p>
     `,
   })
   if (sendError) {
