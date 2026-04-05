@@ -93,21 +93,40 @@ export async function POST(request: Request) {
     auth: { persistSession: false },
   })
 
-  const { error: upsertError } = await supabase.from('auth_invites').upsert(
-    {
-      email,
-      token_hash: tokenHash,
-      expires_at: expiresAt.toISOString(),
-      used_at: null,
-    },
-    { onConflict: 'email' }
-  )
-  if (upsertError) {
-    console.error('invite send upsert error:', upsertError)
+  const row = {
+    email,
+    token_hash: tokenHash,
+    expires_at: expiresAt.toISOString(),
+    used_at: null as string | null,
+  }
+
+  const { data: updatedRows, error: updateError } = await supabase
+    .from('auth_invites')
+    .update({
+      token_hash: row.token_hash,
+      expires_at: row.expires_at,
+      used_at: row.used_at,
+    })
+    .eq('email', email)
+    .select('id')
+
+  if (updateError) {
+    console.error('invite send update error:', updateError)
     return NextResponse.json(
-      { ok: false, error: upsertError.message },
+      { ok: false, error: updateError.message },
       { status: 500 }
     )
+  }
+
+  if (!updatedRows?.length) {
+    const { error: insertError } = await supabase.from('auth_invites').insert(row)
+    if (insertError) {
+      console.error('invite send insert error:', insertError)
+      return NextResponse.json(
+        { ok: false, error: insertError.message },
+        { status: 500 }
+      )
+    }
   }
 
   const siteUrl = getSiteUrl(request)
